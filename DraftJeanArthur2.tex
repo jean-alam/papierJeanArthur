@@ -1,0 +1,1684 @@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% asme2e.tex %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Template for producing ASME-format articles using LaTeX            %
+% Written by   Harry H. Cheng                                        %\
+%              Integration Engineering Laboratory                    %
+%              Department of Mechanical and Aeronautical Engineering %
+%              University of California                              %
+%              Davis, CA 95616                                       %
+%              Tel: (530) 752-5020 (office)                          %
+%                   (530) 752-1028 (lab)                             %
+%              Fax: (530) 752-4158                                   %
+%              Email: hhcheng@ucdavis.edu                            %
+%              WWW:   http://iel.ucdavis.edu/people/cheng.html       %
+%              May 7, 1994                                           %
+% Modified: February 16, 2001 by Harry H. Cheng                      %
+% Modified: January  01, 2003 by Geoffrey R. Shiflett                %
+% Use at your own risk, send complaints to /dev/null                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% use twocolumn and 10pt options with the asme2e format
+\documentclass[twocolumn,10pt]{asme2e}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{subcaption}
+\usepackage{color}
+\usepackage{adjustbox}
+\usepackage{verbatim}
+\usepackage{multirow}
+\graphicspath{
+%{./figures/}
+{/Users/degenevea/ownCloud/PICT_LATEX/2020_ASME/}
+{C:/Users/Arthur/ownCloud/PICT_LATEX/2020_ASME/}
+}
+\usepackage{cite}
+%\usepackage[fleqn]{amsmath}
+\usepackage{physics}
+\usepackage[]{mathtools}
+\DeclareUnicodeCharacter{0301}{\'{e}}
+
+% strikethrough text
+\usepackage[normalem]{ulem}
+\usepackage{soul}
+\usepackage{fixltx2e}
+
+\special{papersize=8.5in,11in}
+
+%% The class has several options
+%  onecolumn/twocolumn - format for one or two columns per page
+%  10pt/11pt/12pt - use 10, 11, or 12 point font
+%  oneside/twoside - format for oneside/twosided printing
+%  final/draft - format for final/draft copy
+%  cleanfoot - take out copyright info in footer leave page number
+%  cleanhead - take out the conference banner on the title page
+%  titlepage/notitlepage - put in titlepage or leave out titlepage
+%  
+%% The default is oneside, onecolumn, 10pt, final
+
+%%% Replace here with information related to your conference
+\confshortname{GT2020}
+\conffullname{ASME Turbo Expo 2020: Turbine Technical Conference and Exposition}
+
+%%%%% for date in a single month, use
+\confdate{22-26}
+\confmonth{June}
+%%%%% for date across two months, use
+%\confdate{August 30-September 2}
+\confyear{2020}
+\confcity{London}
+\confcountry{England}
+
+%%% Replace DETC2009/MESA-12345 with the number supplied to you 
+%%% by ASME for your paper.
+\papernum{GT2020-76152}
+
+%%% You need to remove 'DRAFT/: ' in the title for the final submitted version.
+\title{Large Eddy Simulation of a high pressure non-premixed oxy-flame and assessment of low order models for the mixing process}
+
+%%% author
+\author{J. AL AM $^{1}$,A. Degeneve$^{1,2}$,T. Schuller$^{1,3}$,  R. Vicquelin$^1$, 
+    \affiliation{
+	$^1$Laboratoire EM2C, CNRS, CentraleSup\'elec, Universit\'e Paris-Saclay, 3, rue Joliot Curie, 91192 Gif-sur-Yvette cedex, France\\
+	$^2$Air Liquide, Centre de recherche Paris Saclay, Chemin de la Porte des Loges, B.P. 126, 78354 Les Loges en Josas, France\\
+	$^3$Institut de Mécanique des Fluides de Toulouse, IMFT, Université de Toulouse, CNRS, Toulouse, France\\
+    Email: jean.al-am@student-cs.fr
+    }
+}
+
+\newcommand{\mathleft}{\@fleqntrue\@mathmargin0pt}
+\newcommand*\dif{\mathop{}\!\mathrm{d}}
+\newcommand{\jean}[1] {\textcolor{blue}{#1}}%blue
+\newcommand{\arthur}[1] {\textcolor{red}{#1}}%red
+\newcommand{\ronan}[1] {\textcolor{cyan}{#1}}%cyan
+
+\begin{document}
+
+\maketitle    
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+{ Large Eddy Simulation of a non-premixed CH4/O2 flame at high pressure and featuring a moderate swirl number is presented. The simulations have been performed under the flamelet progress variable (FPV) framework. The look-up table is linked to the flow solution by means of the mixture fraction, its segregation factor and the progress variable. The length of non-premixed jet-like oxy-flames was recently seen to be well predicted by low-order models relying on the mixing process generated in the near field region close to the injector outlet as long as swirl effects are accounted for. Those mechanisms have however never been investigated at high-pressure. The motivation of this study is to assess their validity to conditions approaching industrial configurations using high fidelity numerical tools at an affordable cost. The numerical setup is first validated with experimental data on a non-reacting simulation of a coaxial jet at atmospheric pressure. A mesh refinement technique is used to match with the experimental data while reducing the CPU cost of the computations. Scaling laws for the evolution of the methane mass fraction along the centerline axis are studied and validated for non-reacting high-pressure conditions. The previously derived extension of low-order model for the flame length is then assessed with reacting large eddy simulation at high pressure oxy-combustion conditions taking into account swirl effect. Mean and instantaneous fields of mixture fraction, velocity and temperature are analyzed in the considered configuration and allow for validating the flame length model in high-pressure flames.    }
+
+\end{abstract}
+
+
+\section*{INTRODUCTION}
+Worries over climate change have led to mounting efforts on developing new technologies aiming to reduce the increased level of greenhouse emissions in the atmosphere especially carbon dioxide CO\textsubscript{2}. Carbon capture and storage (CCS) has been under consideration as one solution to this problem, and oxy-combustion is one of the proposed methods for such techniques with a relatively low cost. It consists in replacing air, as the oxidizer, by a stream of pure oxygen.
+% In some cases, fuel may be diluted in  CO\textsubscript{2} or water vapor H\textsubscript{2}O in order to reduce the high temperatures from the combustion. As a consequence, burnt gases from such a combustion consist mostly of CO\textsubscript{2} and H\textsubscript{2}O, which facilitates the separation of CO\textsubscript{2} \cite{kanniche2010pre}. In undiluted situations, oxy-combustion leads to very high adiabatic flame temperatures (about 700K in plus that of classical air combustion). As a result, this technology has demonstrated its reliability in the glass industry \cite{normann2008high}, industrial boilers and chemical reforming process \cite{kanniche2010pre} as well as  in the energy production power plants \cite{liu2012characteristics}.
+At atmospheric pressure, the overall cycle efficiency is however lowered \cite{hong2009analysis} compared to conventional systems.
+%Conventional oxy-combustion systems working at atmospheric pressure require a large amount of energy for the carbon dioxide purification and compression unit. Moreover, high amount of latent enthalpy from flue gases, containing a high concentration of water vapor, is wasted. In both cases, the overall cycle efficiency is lowered \cite{hong2009analysis}.
+For alternatives, pressurized oxy-combustion has been investigated where oxygen is pre-compressed in the air separation unit, which significantly reduces the compression work duty of the compressor unit leading to a better overall net efficiency \cite{hong2009analysis}. Pressure increase also enables a significant size reduction for high thermal power applications \cite{gopan2014process} and an improved fuel burnout for a similar residence-time furnace operating at ambient pressure \cite{gopan2014process}.
+
+When operating a combustion facility with pure oxygen, the fuel and the oxidizer streams are often injected separately for safety reasons. Non-premixed coaxial injectors are already employed in oxy-combustion operations in the glass industry \cite{auchet2008first}, in reforming burners \cite{forster20173d} and also considered for new gas turbine technologies \cite{sanz2008qualitative}. As O$_2$-enrichment increases the flame resistance to aerodynamic strain, non-premixed oxy-flames are often stabilized in the wake of the injector rim as in \cite{kim2006emission,sautet2001length,degeneve2019scaling}. In these experimental works, the flame length was reported to be sensibly shorter than in air operations.
+%For non-premixed systems, the flamelength is defined as the distance from the injector outlet where the reactants meet at stoechiometry \cite{peters1991scaling}.
+In a recent study, Degeneve \textit{et al.} showed that the length of oxy-flames is well predicted by the mixing process occurring in the near-field region close to the injector outlet \cite{degeneve2019scaling}. In this study, a model from \cite{villermaux2000mixing,schumaker2009coaxial} is tested with O$_2$-enriched air and seen to account for the flame length in a large range of operating conditions.
+
+
+% For oxy-combustion applications, as the stoichiometric mixture fraction $z_{st}$ is large, the difference between the potential core and the stoichiometric length is small.
+
+Non-premixed oxy-flames can also feature swirl in the annular oxidizer stream. Providing a rotational motion to the flow being injected in the chamber enables high energy conversion in a small volume by improving the mixing conditions between the fuel and the oxidizer \cite{merlo2014combustion}. The swirl number is an annular channel is defined as: $S_2= \int_{r_1}^{r_2} u_z u_\theta r \mathrm{d} r/(r_2 \int_{r_1}^{r_2} u_z^2 \mathrm{d}r)$, where $r_1$ and $r_2$ denotes the radius of the central and annular injection. High swirl injectors $S_2>0.6$ are widely used because they lead to the formation of a central recirculation zone (CRZ), which favors flame stabilization downstream the injector . When operated at a low swirl level $S_2<0.6$, the CRZ is cancelled and the flames remain in the jet-like regime \cite{chen1990comparison,degeneve2019effects}. In the latter case, the flame length is reduced due to an increase in the turbulent mixing process. This feature has been added to the flame length model from \cite{villermaux2000mixing} by taking into account the contribution of swirl in the turbulent mixing process occurring in the near-field region \cite{degeneve2019scaling}. The scaling law for the stoichiometric flame length $L_s$ developed with this near field approach is given as follows \cite{villermaux2000mixing,degeneve2019scaling}:
+
+\begin{equation}
+\label{eq:Ls1}
+\frac{L_s}{d_1} = c_1 {(J_{eq}^{1/2}X_{st})}^{-1}(1+(kS_2)^2)^{1/2}+c_0 
+\end{equation}
+
+Where $c_0$ and $c_1$ are positive constant, $d_1$ is the central injector diameter, $X_{st}$ the molar stoichiometric mixture fraction and $J=\rho_2/\rho_1 r_u^2$ with $r_u=u_2/u_1$ corresponds to the momentum ratio between the two streams. Change of entrainment imparted by heat release are taken into account by replacing $J$ to $J_{eq}$ in Eq.~(\ref{eq:Ls1}) as described in \cite{tacina2000effects}. $S_2$ is the swirl number in the annular flow and $k$ a constant given by $k=2/(1+(d_2/d_1)^2)$. Swirling the annular oxidizer stream therefore remains interesting to obtain compact flames but lying in the jet-like regime where presence of a CRZ is not desired . This configuration constitutes the target of the present study.
+
+
+The reliability of this new model has however never been confronted to numerical simulations. Besides, numerical simulations of oxy-flames in the jet-like regimes are scarce \cite{seepana2009flame,krieger2015numerical}. Numerical simulations are a good candidate to provide further information of the reacting flows than the flame length which is commonly measured in experimental studies. This constitutes a first motivation of this work. Another advantage of numerical simulations is to test these scaling laws at elevated pressure, which is experimentally challenging. For this reason, a swirling oxy-flames featuring a thermal power $\Phi = 4$~MW, at the pressure $P=60$~bar and annular swirl $S_2=0.5$ is selected as a test case for the scaling law. Due to lack of experimental data for such high pressure conditions, a non-reactive methane-air numerical simulation at atmospheric pressure is first carried out for validation purpose with a similar numerical setup. Since high fidelity numerical tools are very costly in terms of CPU time regarding industrial applications, a special care is taken in this study to limit as possible the CPU cost.
+
+The article is organized as follows. The numerical models for the turbulent reacting flow used in the following simulations are first rapidly presented, followed by a description of the computational domain adopted. Comparison of the results of the first non-reactive simulation with experimental data is then presented. An \emph{a priori} estimation of the flame adiabatic temperature, flame length, computational time and thermal losses are carried out for the high pressure oxy-combustion simulations. Results of this latter case are then showed in three conditions: non-reactive, adiabatic and isothermal-wall simulations.
+
+%The validity  Despite its importance in a wide range of applications, high pressure oxy-combustion with a moderate swirl is not well investigated numerically in literature and is very hard to experiment. For that, the focus of this paper is to analyze some flow and flame characteristics and verify the low order models mentioned above in these conditions. The effect of heat losses is also taken into account. 
+
+
+
+%where it was considered that mixing between the fuel in the center and oxidizer in the annular flow in reacting conditions is equivalent to the non reacting mixing process with an equivalent outer oxidizer. This latter is characterized by an equivalent higher temperature $T_{eq}$ and an equivalent density $\rho_2^{eq}=(T_2/T_2^{eq})\rho_2$. Then from Eq.~(\ref{eq:Ls1}), stoichiometric flame length will be given by replacing $J$ by $J_{eq}=\rho_2^{eq}/\rho_1 r_u^2$. The effect of the swirling annular flow on the flame stochiometric length is also taken into account in the work of Degenève et al. \cite{degeneve2019scaling} by estimating the turbulent velocity scale within the annular jet. Thus, $J_{eq}$ was substitued by $J_{eq,sw}=J_{eq}(1+(kS_2)^2)^{1/2}$.
+
+
+
+
+
+
+
+
+
+
+
+%In practical cases, for these applications, the mixing time for fuel and oxidizer is larger than the chemical reaction time. The process is mixing controlled. Thus, the reaction zone structure is thin diffusion flamelet. Many of the industrial combustors are powered by coaxial injectors where the fuel and oxidizer are injected separately. In such configurations, the flow characteristics and the flame structure (especially the flame length) depend largely on the mixing conditions between the two flows (oxidizer and fuel) \cite{alexander2012mixing}. 
+
+
+
+%Dealing with high temperature and high thermal power applications, flame stabilization with a bluff body becomes very limited due to high thermal stress on this body. For that, swirl stabilized flames are used extensively in industrial high temperature applications \cite{merlo2014combustion}. 
+ 
+%However, an experimental study \cite{johnson2005comparison} showed that the amount of pollutant emissions from a gas turbine operating in a low swirl mode are significantly reduced compared to that working in high swirl condition. This was explained by the lack of CRZ and the shorter residence time within the low swirl mode. This result is obtained by comparing the flow fields and emissions of high swirl and low swirl injectors for a lean premixed gas turbine working over large range of operating conditions (thermal powers of $0.08-2.2$ MW, elevated inlet temperatures of $500-700$ K and pressures of $6-15$ atm). For that low swirled case will be adopted in this work. \\
+
+
+
+%In this regime, mixture characteristics are controlled by the large scale instabilities taking place in the shear layer between between the two jets near the injector. 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%\begin{align}
+%%%\begin{nomenclature}
+%%%\entry{$S$}{Swirl Number.}
+%%%\entry{$D_0$}{Injector exit diameter, mm.}
+%%%\entry{$d$}{Central rod diameter, mm.}
+%%%\entry{$C$}{Conical end piece diameter, mm.}
+%%%\entry{$FTF$}{Flame Transfer Function.}
+%%%\end{nomenclature}
+%%%%\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Numerical and mathematical modeling}
+
+\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{10 pt}
+\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{5 pt}
+
+\subsection*{Turbulent flow modeling}
+Large-eddy simulations are carried out with AVBP solver (http://www.cerfacs.fr/avbp7x/) developed at CERFACS. AVBP solves the three dimensional compressible Navier-Stokes equations on unstructured and hybrid grids witch enables the modeling of unsteady reacting flows in complex geometrical configurations.
+For compressible flows, a characteristic treatment for boundary conditions is required for an accurate control of wave reflections from the boundaries of the computational domain \cite{poinsot1992boundary}. 
+
+In this work, the convective terms are discretized with the Two-Step Taylor Galerkin C (TTGC) scheme \cite{colin2000development}, featuring a third order discretization in time and space. The LES subgrid model SIGMA \cite{nicoud2011using} is adopted for the subgrid stress tensor and constant subgrid Prandtl and Schmidt (both equal to 0.6) numbers are considered.
+
+\subsection*{Combustion modeling}
+The Flamelet/Progress Variable (FPV) model \cite{pierce2004progress} and its non-adiabatic extension \cite{ihme2008prediction} are adopted in this study and incorporated in the compressible flow solver with the TTC formalism \cite{vicquelin2011coupling}. This non-premixed flamelet model is parametrized by: the mixture fraction $Z$, the segregation factor $S_z$,  the progress variable $c$ and a normalized enthalpy. The joint probability density function (pdf) is modeled as a $\beta$-pdf for $Z$ and Dirac distribution for $c$ and the enthalpy.
+The flamelet database is obtained from solutions of steady non-premixed flamelet equations solved numerically for different strain rates. These flamelets were carried out in this work using the Grimech 3.0 mechanism  \cite{smith1999gri}. The progress variable $c$ is here defined as a linear combination of species CO$_2$ CO and H$_2$O. \\
+
+\subsection*{Radiative modeling}
+Thermal radiation fields are later computed using the RAINIER Monte Carlo solver \cite{palluotto2019assessment} based on the Emission-based Reciprocity method \cite{tesse2002radiative}. Only the contributions of CO$_2$ and H$_2$O species are considered. The gas radiative properties are computed using the correlated-k model \cite{goody1989correlated} based on updated parameters due to \cite{riviere2012updated}. Such a combination of a Monte Carlo approach and detailed gas properties allow for an accurate description of radiative transfer. 
+ 
+
+\begin{figure}
+   \centering
+   \begin{subfigure}[b]{1.2\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/Oxytec.png}
+       \caption{  }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \begin{subfigure}[b]{0.8\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/injector.png}
+       \caption{ }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \caption{The computational domain and a schematic of the injector used for the non reacting simulation at atmospheric pressure}
+   \label{fig:domainP1}
+   %\vspace{-0.05 cm}
+\end{figure} 
+
+\begin{table}[t!]
+\centering
+%\small
+%\vspace{-0.75cm}
+\caption{Boundary conditions used in the methane-air non reacting numerical simulation }
+\begin{adjustbox}{width=\columnwidth,center}
+\begin{tabular}{|c|c|c|}
+  \hline
+  \textbf{Parameter} & \textbf{Inner injection (fuel)} & \textbf{Outer injection (Oxidizer)}\\
+  \hline
+  \textbf{mass flow [Kg/s]} & $1.86 10^{-4}$ & $3.21 ^{-3}$\\
+    \hline
+  \textbf{Temperature [K]} & 300 & 300 \\
+    \hline
+  \textbf{Turbulence intensity [\%]} & 10 & 5 \\
+    \hline
+  \textbf{Reynolds number (diameter)} & 4000 & 12000 \\
+  \hline
+%  $\overline{S}_{turb}$ & 0.74&0.78 & 0.73 & 0.70 \\
+%    \hline
+\end{tabular}
+\end{adjustbox}
+  \label{tab:BC-Cold}
+\end{table} 
+
+\begin{figure*}
+%\captionsetup[subfigure]{justification=centering}
+\hspace{-1.2 cm}
+  % \centering
+   \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=1.39\linewidth]{fig/exp-field.eps}
+       \caption{{Experimental data}}
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \hspace{-0.1 cm}
+      \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=1.39\linewidth]{fig/uz-mesh1.eps}
+       {\caption{ {MESH 1 } }}
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=1.39\linewidth]{fig/uz-mesh2.eps}
+       \caption{ {MESH 2}  }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \caption{comparison of 2D fields of the axial velocity $u_z$ above the injector. $z$ is the axial dimension, $x$ the radial dimension and $d_1$ the inner diameter }
+   \label{fig:fields-uz}
+   %\vspace{-0.4 cm}
+\end{figure*}
+
+\begin{comment}
+\begin{figure*}
+   \centering
+   \begin{subfigure}[b]{0.28\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/uz_exp.png}
+       \caption{ experimental }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \begin{subfigure}[b]{0.28\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/uz_num1.png}
+       \caption{ Mesh1 }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \begin{subfigure}[b]{0.28\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/uz_num2.png}
+       \caption{ Mesh refined }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \caption{comparison of 2D fields of the axial velocity $u_z$ above the injector. $z$ is the axial dimension, $x$ the radial dimension and $d_1$ the inner diameter}
+   \label{fig:fields-uz}
+   \vspace{-0.05 cm}
+\end{figure*} 
+\end{comment}
+
+
+\section*{Simulated configurations}
+
+A flame lying in the jet-like regime and featuring a moderate swirl number has been retained. The operating point has been investigated in the Oxytec combustor presented in \cite{degeneve2019scaling,degeneve2019effects}. Four simulation cases have been carried out. The first simulation, A1$_{cold}$, is a non-reacting methane-air simulation at atmospheric pressure for which experimental data are available for validation purpose. The three following simulations are performed at high pressure $P=60$~bars with a CH$_4$/O$_2$ coaxial jet configuration featuring swirl in the annular stream. The second simulation, Ox60$_{cold}$, also made in non reacting-conditions, aims at testing the scaling relation (Eq.~\ref{eq:Ls1}) \cite{degeneve2019scaling}. The two last simulations are performed in reacting conditions, in an adiabatic case where heat losses are discarded (Ox60$_{adiab}$) and finally by imposing the temperature at the combustor sidewalls (Ox60$_{isot}$).
+   
+The computational domain is presented in Figure \ref{fig:domainP1}(a). The coaxial injector is sketched in Figure \ref{fig:domainP1} in a longitudinal (left) and a transverse (right) cuts. The injector comprises a central tube of inner diameter $d_1 = 6$~mm which conveys the oxidizer stream, and an annular channel of outer diameter $d_2 = 20$ mm filled with an air flow for the methane-air simulation. The thickness of the burner lips is $e = 1$~mm. This injector is equipped with four tangential inlets which eventually generate a swirling flow at the inlet. $Q_1$ and $Q_2$ refer to the volume flow rates for the methane and the oxidizer streams. The injection outlet of the coaxial injector is located $5$~mm above the back plane.
+
+For the first simulation A1$_{cold}$, the oxidizer is an air mixture and the annular jet is not swirled. The tangential volume flow rate in this case is set to $Q_{2,\theta}=0$. The combustion chamber is a parallelepiped with a $150$ mm square cross section and $250$~mm height equipped with four quartz windows. At the top of the chamber, a converging nozzle with an area contraction ratio of 0.8 is used to facilitate the burnt gas exhaust and to avoid ambient air entrainment inside the combustion chamber through the combustor outlet. The burned gases exhaust to the atmosphere at ambient pressure. The atmosphere is used here for numerical purpose, in order to push the outlet condition far from the computational domain.
+
+
+For the three other high pressure cases (Ox60$_{cold}$, Ox60$_{adiab}$ and Ox60$_{isot}$), modifications of this configuration have been made. The CH$_4$/O$_2$ coaxial jet features an annular swirl, leading to tangential injection in the four tangential slots (Fig.~\ref{fig:domainP1})(b). The combustion chamber is of circular cross section. Since the operating pressure is very high $P=60$~bars, the burnt gases are evacuated through a circular duct instead of the atmosphere outlet. The geometrical swirl number of the annular channel $S_2$ (Table \ref{tab:BC-HOT}) is defined by Eq. \ref{eq:Swirl}, assuming a solid-body rotation.
+
+\begin{equation}
+\label{eq:Swirl}
+S_2 = \frac{\pi}{4} \frac{Hd_2}{NlL} \frac{1-(d_2/d_1)^4}{1+Q_{2,z}/Q_{2,\theta}}  
+\end{equation} 
+
+where $H=9$~mm is the distance separating the tangential injection channels from the burner axis, $l=3$~mm the width and $L=9$~mm the height of the $N=4$ tangential injection channels (Figure \ref{fig:domainP1}).
+
+\section*{Non reacting simulation}
+
+The non-reacting methane-air simulation is presented in the following. Table (\ref{tab:BC-Cold}) summarizes the boundary conditions which have been used. The Reynolds number $Re_1$ in the central injection is calculated based on the inner diameter $Re_1 = u_1 d_1/\nu$ where $\nu$ denotes the kinetic viscosity. In the annular injection, the hydraulic diameter $D_h$ is used with $D_h = d_2 - d_1 -e$, $e=1$ mm being the thickness of the injector's wall. 
+
+\subsection*{Mesh description}
+
+\begin{figure}[b]
+  \centering
+  \includegraphics[width=1\linewidth]{fig/MeshCold.png}
+  \caption{ Longitudinal cuts of the mesh grids above the injector. Left: corse mesh M1. Right: refined mesh M2. }
+  \label{fig:MeshCold}
+\end{figure}
+
+The meshes used in the simulations were created using the CentaurSoft software. Tetrahedral and unstructured meshes are adopted. A refinement is applied in the mixing regions between the two flows. These regions correspond to the shear layers characterized by an intense turbulence level in the wake of the inner and outer injector rim. Two meshes M1 and M2 were generated and compared in this simulation. Two cuts above the injector are showed in Figure \ref{fig:MeshCold}. The first mesh M1 features a relatively coarse mesh with 5 millions cells and smallest cell of $1.33.10^{-12}$  m$^3$. The second configuration M2, is refined with 8 millions cells with a smallest cell of $3.43.10^{-13}$ m$^3$. The refined mesh M2 is obtained by an automatic method of mesh refinement as proposed by Daviller \textit{et al.} \cite{daviller2017mesh}. This method is based on a sensor that flag the critical regions for refinement corresponding to the shear layers. The metric proposed by \cite{daviller2017mesh} is the factor of dissipation of kinetic energy $\Phi_k$ defined as :
+
+
+\begin{equation}
+\label{eq:LIKE}
+\Phi_k = (\mu + \mu_t) (\frac{\partial \tilde{u}_i }{\partial x_j} + \frac{\partial \tilde{u}_j }{\partial x_i} )^2 
+\end{equation}
+
+Where $\mu$ and $\mu_t$ are the molecular and turbulent viscosity respectively and $\tilde{u}_i$ is the filtered component i of the velocity in the framework of the LES approach.
+
+
+.% The field of this factor above the injector will be showed for the cold case analysis in the following high pressure simulation (figure \ref{fig:field_avg_cold_HP}).
+%\begin{enumerate}
+%\item Corse mesh (Mesh 1) with 5 millions cells and smallest cell of $1.33.10^{-12}$;
+%\item Refined mesh with 8 millions cells and smallest cell of $3.43.10^{-13}$
+%\end{enumerate}
+\begin{figure}
+   %\hspace{-10 mm}
+   %\centering
+   %\begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/uz1uz8.png}
+      % \caption{ }
+       %\label{fig:YcZad}
+   %\end{subfigure}
+  % \hspace{-15 mm}
+   %\begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/uz_d2.png}
+   %    \caption{  }
+   %    %\label{fig:TZad}
+   %\end{subfigure}
+   %\hspace{-1 mm}
+%   \begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+%       \centering
+%       \includegraphics[width=\linewidth]{fig/uz_d4.png}
+%       \caption{  }
+%       %\label{fig:YcZad}
+%   \end{subfigure}
+   %   \hspace{-15 mm}
+   %\begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/uz_d6.png}
+   %    \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+   %   \hspace{-1 mm}
+   %\begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/uz_d8.png}
+   %  %  \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+    %  \hspace{-2 mm}
+%   \begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+%       \centering
+%       \includegraphics[width=\linewidth]{fig/uz_d10.png}
+%       \caption{  }
+%       %\label{fig:YcZad}
+%   \end{subfigure}
+   \caption{Comparison of the mean component of the axial velocity $\overline{u}_z$ profiles for different heights above the injector $z/d_1=1$ on the left and $z/d_1=8$ on the right.}
+   \label{fig:profiles-uz}
+\end{figure}
+\begin{figure}
+   %\centering
+   %\begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/urms1urms4.png}
+   %\end{subfigure}
+   %\begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/uz_rms2.png}
+   %    \caption{  }
+   %    %\label{fig:TZad}
+   %\end{subfigure}
+   %\begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/uz_rms_d4.png}
+   %   % \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+   %\begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/uz_rms6.png}
+   %    \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+   %\begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/uz_rms8.png}
+   %    \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+   %\begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/uz_rms10.png}
+   %    \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+   \caption{Comparison of the fluctuating component of the axial velocity $u_{z,rms}$ profiles for different heights above the injector $z/d_1=1$ on the left and $z/d_1=4$ on the right.}
+   \label{fig:profiles-urms}
+\end{figure}
+
+
+\subsection*{Comparison with experimental data}
+
+
+Comparison is made between the numerical simulation and the experimental data for the first simulation for the first case A1$_{cold}$. The mean component of the axial velocity is shown in Fig.~\ref{fig:fields-uz}. Velocity profiles are extracted at different heights above the injector and represented in Fig.~\ref{fig:profiles-uz} . The velocity are compared between the experimental data and those obtained numerically with the meshes M1 and M2. $z$ denotes the axial height, $x$ the radial dimension and $d_1$ the inner injector diameter. It results that the refined mesh is able to well reproduce the flow in the shear layers as well as in central flow. This good agreement is very well shown at a high distance from the injector. However, small differences may be noticed for the coarse mesh M1 especially in the mixing region between the two flows. 
+
+
+\begin{comment}
+\begin{figure}
+   \hspace{-11 mm}
+   \centering
+   \begin{subfigure}[b]{0.38\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/urms_exp.png}
+       \caption{ experimental }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \hspace{-3 mm}
+   \begin{subfigure}[b]{0.38\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/urms_MESH1.png}
+       \caption{ Mesh1 }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \hspace{-3 mm}
+   \begin{subfigure}[b]{0.38\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/urms_REF.png}
+       \caption{ Mesh refined }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \caption{Comparison of 2D fields of the rms fluctuations of the axial velocity $u_{z,rms}$ above the injector. $z$ is the axial dimension, $x$ the radial dimension and $d_1$ the inner diameter}.
+   \label{fig:fields-urms}
+   \vspace{-0.05 cm}
+\end{figure} 
+\end{comment}
+
+
+Figure \ref{fig:profiles-urms} shows the profiles (for different heights above the burner) of the rms axial velocity fluctuations given by experimental data and those obtained by the numerical simulation for the two meshes. These fluctuations are proportional to the turbulent structures intensity. We can notice the good agreement whrn using the refined mesh espacially for the height ($z/d_1>4$). The inner shear layers (the two central pics shown in the profiles) and the outer shear layers (the two external pics shown in the profiles) are well reproduced by the refined mesh. The layers corresponding to maximal turbulent intensity are related to the mixture between the two jets (for the inner shear layer) and the mixing between the outer jet and the low velocity mixture in the chamber (for the outer shear layer). Some differences can be noticed especially in regions near the injector. In these regions, turbulence is controlled by the manner of injection. In the simulation, a homogeneous isotropic turbulence is injected witch is not the case in real experience.
+
+Even at high distances from the injector, mesh 1 is not able to well reproduce all these turbulent properties. Thus, when comparing between the results from the two meshes, the importance of the automatic mesh refinement is observed to well predict the finest physical phenomena taking place in the mixing regions with a relatively low number of cells leading to a very reasonable computational cost for a high fidelity simulation. In fact, the two meshes have almost the same number of cells but these cells are better distributed in the refined mesh case. This method will be used for the high pressure oxy-combustion simulation. \\
+This simulation has allowed us to validate our high fidelity large eddy simulation approach by experimental data. The same LES setup will be used for the high pressure jet-like pure oxy-flame simulation. The quality of the reacting simulation depends  widely on the flow and turbulence characteristics especially in the inner and outer shear layers that are very well predicted. The dependency of the results on the mesh properties is also highlighted. The validation was done at a relatively low computational cost thanks to an automatic strategy of mesh refinement. Thus this strategy will also be used in the following high pressure reacting simulation.      
+
+\section*{High pressure oxy-combustion simulation}
+
+\subsection*{Preliminary calculations and combustor's design}
+
+Numerical simulations are now performed in oxy-combustion operation at elevated pressure $P=60~$bar. As the experimental data are not available in those conditions, the operating parameters of the following cases are chosen to be representative of industrial configuration at high pressure with partial oxidation \cite{richter2015large} or oxy-fuel gas turbine applications (ref). These parameters are assembled in Table \ref{tab:BC-HOT}. The dimensions of the injector and of the combustion chamber are chosen to simulate a small computational domain leading to a reduced computational cost of the simulation. The flame length has therefore be \textit{a priori} adapted to the dimensions of the combustion chamber. The injecting conditions for a compact flame have been selected relying on the model given by Eq. \ref{eq:Ls1}. It is recalled that this model has never been tested under the investigated operating conditions, and that its validation constitute one motivation of this study. Equation \ref{eq:Ls1} is first assumed to be reliable for the selected operating conditions. Its validity will then be extensively verified with the result of the numerical simulation.
+
+
+Based on eq. \ref{eq:Ls1}, the stoichiometric flame length $L_{st}$ depends on the equivalent momentum flux ratio $J_{eq,sw}$ and of the mixture fraction $X_{st}$. This latter is fully determined by the nature of the oxidizer (pure oxygen) and the fuel (methane) $X_{st}=0.2$. For $J_{eq,sw}$, the equivalent density $\rho_{eq}$ is first estimated with the $T_{eq}$: $\rho_{eq}=4.3$. The method described in \cite{tacina2000effects,dahm2005effects} is used here for the determination of the equivalent temperature and yields $T_{eq}= 5250$ K. By fixing the operational parameters (see Table \ref{tab:BC-HOT}) the square of the ratio of the inlet axial velocities $u_2/u_1$ depends only on the injector diameters $d_1$ and $d_2$. The outer diameter $d_2=20$~mm is taken equal to the one used for the previous calculation A1$_{cold}$ to conserve the same congestion. In these conditions, the flame length $L_{st}$ only depends on the inner injector diameter $d_1$: $L_{st} \propto 1/d_1$. The inner diameter $d_1$ is set to $d_1=12$ mm which leads to the flame length $L_{st}=300$ mm. All the numerical values are detailed in Table \ref{tab:BC-HOT}. The burned gases properties were computed for a methane air diffusion flame at $P=60$~bar using the Grimech 3.0 mechanism \cite{cordiersimulation}. The combustion chamber height $H$ is be taken sufficiently larger than the flame $H = 1.7 L_{st}$. In order to further reduce the computional cost of the numerical simulation, the residence time in the chamber has also been reduced by setting a moderate diameter of the combustion chamber $D= 80$ mm. 
+
+In order to predict the overall cost of the numerical simulation, the computational time is first estimated. The time step $\Delta t$ of the AVBP solver is based on the acoustic time and is determined using the CFL criterion given by:
+
+\begin{equation}
+\label{eq:CFL}
+CFL = \frac{|u+c|_{max} \Delta t}{\Delta x_{min}} \leqslant \alpha   
+\end{equation} 
+where $\alpha$ is a positive real number, $u$ and $c$ are approximations of the axial velocity and speed of sound respectively and $\Delta x_{min}$ denotes the dimension of the smallest the cell in the mesh.   
+Taking a CFL number of 0.7 for a physical time to be equal to 5 times of the residence time of the burnt gases in the chamber, an estimation of the overall computation time $\tau_{comput} = 55000$ CPU hours is given in table \ref{tab:BC-HOT}. \\ 
+\begin{figure}
+   %\centering
+   \begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/CH4_w_inst.png}
+       %\caption{ }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   %\begin{subfigure}[b]{0.48\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/w_inst.png}
+   %    \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+      \caption{Instantaneous fields of the axial velocity $w [m/s]$ (left) and of the CH$_4$ mass fraction (right) above the injector (up to $z=7d_1$).}
+   \label{fig:field_inst_cold_HP}
+   \vspace{-0.05 cm}
+\end{figure}
+
+
+Sizing of the combustor can be completed with an \textit{a priori} estimatation of the thermal heat losses. The overall radiative heat flux $\Phi^{rad}$ is computed with the help of the Mean Bean Length (MBL) method \cite{yuen2008definition}, which is an engineering method giving a rough estimate of the radiative heat transfer.  Considering an equivalent gas column of length $L$ emitting to the surrounding walls, the radiative flux yields \cite{lefebvre1960heat}:
+
+\begin{equation}
+\label{eq:mean_beam_length}
+\Phi^{rad} \simeq  \sigma \left( \varepsilon (L)  {T_{g}}^4- {T_{w}}^4 S \right) 
+\end{equation}
+%
+where $T_{w}$ and $T_{g}$ are the wall and gas temperature. The wall temperature is set to $T_w = 1800K$ and the gas temperature to $T_g=2700$ K. $\varepsilon(L)$ denotes the equivalent emissivity. For a given gas temperature, the emissivity $\epsilon_k$ of each component $k$ in the medium having a molar fraction $X_k$ is obtained as a function of the product $X_k P L$ where $P=60$~bar is the operating pressure. In this work, these emissivities are calculated based on the work of  Rivi{\`e}re \textit{et al.} \cite{riviere2012updated}. The Mean Beam Length Method states that a rough approximation of the equivalent gas column length is:
+
+
+\begin{equation}\label{eq:MBL}
+L = 3.6 \frac{V}{S}
+\end{equation}
+
+
+where V and S are the volume and the boundary surface of the considered medium respectively. Validity of the MBL approximation has been investigated in the literature \cite{doi:10.1080/00102207408960365,edwards1973thermal}. An overestimation of the radiative power from 25 to 45 $\%$  is reported on a large number of applications. Hoewever, this error remains much lower than the one obtained with other approximate techniques such as the gray gas or the optically thin approximations \cite{doi:10.1080/00102207408960365}. In this calculation, only the contributions of CO\textsubscript{2} and H\textsubscript{2}O species are considered. In the present study, the MBL method leads to $\Phi =101$~kW.
+
+Convective heat losses are estimated using the Dittus-Boelter correlation \cite{xuan2003investigation} for the Nusselt number. This yields for the overall convective heat flux $\Phi=122$~kW. It results that the total heat losses $\Phi^{rad} + \Phi^{conv}$ only constitute 6 $\%$ of the flame thermal power $P=4~$ MW. Consequently, it is reasonable to perform the following simulation Ox60$_{adiab}$ in an adiabatic condition neglecting heat losses.
+
+
+\begin{table}[t!]
+\centering
+%\vspace{-0.75cm}
+\caption{Operating conditions, combustor's dimensions and global properties for the high pressure oxy-combustion simulation }
+\begin{adjustbox}{width=0.9\columnwidth,center}
+\begin{tabular}{|c|c|c|}
+  \hline
+  & \textbf{Parameter} & \textbf{Value} \\
+  \hline
+  \multirow{5}{25 mm}{ \textbf{Operational conditions}} & Operating pressure $P$ [bar] & 60 \\ & Inlet temperature $T_1$ [K] & 300 \\ & Thermal power [MW] & 4 \\ & Global equivalence ratio & 0.95 \\ & Swirl number $S_2$  & 0.5 \\ %\cline{1-3}
+  \hline
+  \multirow{2}{25 mm}{ \textbf{Injector Geometry}} & Central diameter $d_1$ [mm] & 12 \\ & Annular diameter $d_2$ [mm] & 20 \\ 
+  \hline
+  \multirow{2}{25 mm}{ \textbf{Chamber Geometry}} & Height $H$ [mm] & 500 \\ & Section Diameter $D$ [mm] & $80$ \\ %\cline{1-3}
+  \hline
+  \multirow{6}{25 mm}{\textbf{Burt gases and flame properties}} & Temperature $T_{ad}$ [K] & 3600 \\ & Density $\rho$ [Kg/m$^3$] & 4.6 \\ & sound speed $c$ [m/s] & 1260 \\ & Equivalent Temperature $T_{eq}$ [K] & 5250 \\ & Equivalent density $\rho_{eq}$[Kg/m$^3$] & 4.39 \\ & Flame length $L_{st}$ [mm] & 300 \\ %\cline{1-3}
+    \hline
+  \multirow{3}{25 mm}{\textbf{Computational time}} & Physical time $\tau$ [ms] & 140 \\ & Size of the smallest cell $\Delta x$ [mm] & 0.2 \\ & Computational time [CPU hours] & 55000 \\ %\cline{1-3}
+    \hline
+  \multirow{3}{25 mm}{\textbf{Thermal losses}} & Radiatif heat flux $\Phi^{rad}$ [KW] & 101 \\ & Convectif heat losses $\Phi^{conv}$ [KW] & 122 \\ & Pourcentage of heat losses [\%] & 6 \\ %\cline{1-3}
+%  $\overline{S}_{turb}$ & 0.74&0.78 & 0.73 & 0.70 \\
+    \hline
+\end{tabular}
+\end{adjustbox}
+  \label{tab:BC-HOT}
+\end{table}    
+
+\subsection*{Cold case simulation}
+
+
+Results for the high pressure methane-oxygen coaxial jet are first presented with the simulation Ox60$_{cold}$. The same high fidelity AVBP code, numerical schemes and turbulence models are adopted as in the atmospheric simulation A1$_{cold}$. Comparison is also made between two meshes. The first with 8.5 millions cells and the second with 16 millions cells obtained with the same automatic refinement technique as in the previous simulation.
+
+Figure \ref{fig:field_inst_cold_HP} depicts the instantaneous fields for the axial velocity $w$ and the methane mass fraction $Y_{\mathrm{CH}_4}$ above the injector. The instantaneous turbulent structures well develop downtream the injector thanks to the LES approach. This features especially prevails in the wake of the injector central rim. It also appears that central methane stream is almost diluted at the height $z=7 d_1$. This justifies the length taken for the computational domain $H=500$~mm.
+% This justifies the high cost to spend on such a simulation compared to other low cost industrial approaches (like the ones based on an averaging of Navier-Stockes equations). 
+\begin{figure}
+   \centering
+   \begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+      % \centering
+      \hspace{-5 mm}
+       \includegraphics[width=\linewidth]{fig/w_wrms_avg.png}
+       %\caption{ }
+       %\label{fig:YcZad}
+   \end{subfigure}
+      \begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+      \centering
+       \includegraphics[width=\linewidth]{fig/Ych4_LIKE_avg.png}
+       %\caption{ }
+       %\label{fig:YcZad}
+   \end{subfigure}
+      \caption{Averaged fields of the axial velocity $w [m/s]$ and the null axial velocity line is shown in white contour (a), its rms fluctuations $w_{rms} [m/s]$ (b), the methane mass fraction and the stoichiometric line is shown in white contour  (c) and the factor of dissipation of kinetic energy ($\Phi_k$) (d) above the injector (up to $z=10d_1$) }
+   \label{fig:field_avg_cold_HP}
+   %\vspace{-0.05 cm}
+\end{figure} 
+
+Figure \ref{fig:field_avg_cold_HP} shows the averaged fields of the axial velocity $w$, its rms fluctuations $w_{rms}$, the mass mixture fraction of methane and the dissipation in the kinetic energy $\Phi_k$ as expressed in eq.~\ref{eq:LIKE}. In the axial velocity field, the contour corresponding to $\overline{w} = 0$ is also presented. Thus, the outer recirculation zones where $\overline{w}$ takes negative values are well identified. The effect of the chamber confinement on the fluid dynamics in theses zones has an important effect of the mixture composition and burnt gases flow in the reacting case. We can also notice the absence of inner recirculation zones since the swirl number is moderate. The flame therefore well belongs to the jet-like regime conformingly with \cite{chen1990comparison}. Turbulent structures intensity can be quantified through the rms fluctuations fields or the dissipation in the turbulent kinetic energy. We can clearly identify the two shear layers characterized by a maximum turbulence activity: The inner shear layer (ISL) and the outer shear layer (OSL) corresponding to the mixture regions. This justifies the choice of the dissipation of kinetic energy factor as a metric for the automatic refinement strategy. For the methane mass fraction field, the contour on witch this mass fraction is equal to its stoichiometric value ($Y_{CH_4}=Y_{CH_4,st}=0.2$) is also showed. A parameter of interest is the stoichiometric length $L_{st}$. This length is proportional to the flame length in the reacting case and it can be estimated by the same model developped for the flame length and showed in Eq. \ref{eq:Ls1}. For that, the temperatures $T_1$ and $T_{2_eq}$ are equal to the fresh gases temperatures ($300K$ here). By doing so, we obtain an estimation of this length given by the model as: $L_{st}/d_1=14.3$. Measuring this quantity from the results of the LES high pressure numerical simulation, one obtains  $L_{st}/d_1=13.9$ witch corresponds to an error of only 3\%. The low order model developped for atmospheric pressure is thus very well validated at high pressure non-reacting case. This means that, even at high pressure operational conditions, mixture characteristics are still controlled by the turbulent instabilities in the shear layer between the two flows near the injector. 
+
+\begin{figure}
+   %\centering
+   %\begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/Ych4_COLD.eps}
+       %\caption{ }
+       %\label{fig:YcZad}
+   %\end{subfigure}
+      \caption{Comparison of the mass fraction profiles of the methane with an experimental scaling law developped by Villermaux and Rehab, 2000 \cite{villermaux2000mixing} }
+   \label{fig:profiles_Ych4_COLDHP}
+   \vspace{-0.05 cm}
+\end{figure}
+
+After validating the low order model for the stoichiometric length, a comparison between the numerical results of the evolution of the mass fraction of methane $Y_{CH_4}$ in function of a normalized scaling height ($\phi$) to a scaling law developped by Villermaux and Rehab, 2000 \cite{villermaux2000mixing}. In this latter work, the scaling law was developped for a coaxial non swirled jet at atmospheric pressure, the two flows (water) having the same density. The Reynolds number (according to the inner diameter $d_1$) is of the order of 15000 and the inlet velocity of the central fluid is lower than that of the annular one ($r_u>1$). The scaling parameter that was found in this work is $\phi= z/d_1 r_u$. For that, figure \ref{fig:profiles_Ych4_COLDHP} shows, in a log-log scale plot, the experimental scaling law (blue dots) and the evolution of $Y_{CH_4}$ in function of the scaling parameter $\phi= z/d_1 r_u$ (green line). The same decreasing rate (slope of -1) can be observed in the two cases. However, the two profiles don't collapse. For that, the momentum flux ration $J$ is first introduced taking into account the density difference between the two flows in numerical simulation. By plotting the numerical evolution of methane in function of $\phi=\frac{z}{d_1} J^{1/2}$, a better representation is obtained showed by the blue curve. The remaining difference is finally attributed to the effect of the swirling motion on the turbulence intensity. As it is done for the flame length model by  \textit{et al} \cite{degeneve2019scaling}, this effect is taken into account through $J_{sw}=J(1+(kS_2)^2)^{1/2}$. Plotting methane evolution in function of this new scaling parameter $\phi=\frac{z}{d_1} J_{sw}$, one obtains the red curve. Thus, a very good agreement can be observed. On one hand, this result prove that all the parameters that were introduced can reproduce the physical phenomena in a very good manner. On the other hand, the validity domain of this scaling law is extended for high pressure conditions and a new scaling parameter is introduced allowing to take into account density difference and swirling effect on the central jet evolution. 
+
+
+\subsection*{Adiabatic hot case simulation}
+
+\begin{figure}
+   %\centering
+   %\begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/T_Z_ADIAB.png}
+       %\caption{ }
+       %\label{fig:YcZad}
+   %\end{subfigure}
+      \caption{Instanteneous fields of the temperature $T$ and the mixture fraction $Z$ above the injector (up to $28 d_1$) for the adiabatic case simulation }
+   \label{fig:fields_TZ_ADIAB}
+   \vspace{-0.05 cm}
+\end{figure}
+
+The same injection conditions used for the previous simulation are adopted in this reactive adiabatic simulation Ox60$_{adiab}$ where heat losses are not considered. Figure \ref{fig:fields_TZ_ADIAB} shows the instanteous fields of the temperature and the mixture fraction in the combustion chamber above the injector. It can be directly observed the very high temperature obtained by this high pressure oxy-flame compared to atmospheric methane air combustion. Contours of the maximum temperature ($T=T_{max}$) and stoichiometric mixture fration $z=z_{st}$ are also presented. It can be noticed that these two contours are almost identical. witch means that the flame, in this case, can be defined either by the maximum temperature or by the stoichiometric mixture fraction. This implies that the chemical time of such a reaction is very small compared to a flow characteristic time and confirms that the reaction zone is well controlled by the mixture between the two flows for a pure oxy-flame. The large increase in pressure leads also to a reduction of the reaction chemical time. Moreover, the effect of the confinement due to combustion chamber sidewalls on the flow and the temperature field in the outer recirulation zone (ORZ) is well remarqued. The temperature in this zone is lower than the the burnt gases adiabatic temperature (around $3500$ $K$ corresponding to the global equivalence ratio of $0.95$). The ORZ is thus filled with a very lean mixture.  \\
+
+\begin{figure}
+   %\centering
+   \begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/PDF-ADIAB.eps}
+       \caption{ }
+       %\label{fig:YcZad}
+   \end{subfigure}
+      \begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/T_Z_ADIAB.eps}
+       \caption{ }
+       %\label{fig:YcZad}
+   \end{subfigure}
+      \caption{ (a). Probability Density Function (PDF) of the flame length for several instantaneous solutions represented by a normal fit   (b). comparison of the averaged profiles the mixture fraction obtained numerically with an experimental scaling law developped by Villermaux and Rehab \cite{villermaux2000mixing} }
+   \label{fig:profiles_TZ_ADIAB}
+   \vspace{-0.05 cm}
+\end{figure}
+
+%In a more quantitive way, figure \ref{fig:profiles_TZ_ADIAB} (a) shows the averaged (in time) profils of the mixture fraction $Z$ and the temperature $T$ along the burner axis (z axis). The height for witch the mixture fraction is equal to its stoichiometric value ($z$ for $Z=Z_st$) is also presented. First, we can notice that the height corresponding to the maximum temperature ($T=T{max}$) and that corresponding to the stoichiometric mixture fraction ($Z=Z_{st}$) are almost the same, confirming for the second time that it is possible to determine the flame length either by the maximum temperature or by the stoichiometric mixture fraction. Thus, by measuring the flame length corresponding to the height above the injector for witch the mixture fraction is equal to its value at the stoichiometric, one obtains a flame length of $L^{LES}_{st}=330 mm$. This higher stoichiometric length compared to the previous cold case is due the thermal expansion caused by the high temperature in the chamber. Comparing this result, obtained by this high fidelity numerical simulation to the flame length estimation obtained by the law order model (\ref{eq:Ls1}) given in table \ref{tab:BC-HOT} ($L^{MOD}_{st}=300mm$), an error of only 10 \% can be noticed. This result is very satisfactory for a such law order model. Thus, another time, this model is also validated in reactive high pressure oxy-combustion case.
+Figure \ref{fig:profiles_TZ_ADIAB} (a) shows the probability density function (PDF) of the flame length. Each flame length sample corresponds to the height above the injector for witch the mixture fraction is equal to its stoichiometric value for each instantaneous numerical solution. Stochastic nature of the high turbulent flow and its effect on the flame is well shown by this plot. Thanks to the LES approach, these instationarities are well reproduced. A normal fit is used to represent the flame length probability density. The estimated mean of this normal fit is 331.6 mm witch corresponds to the mean flame length ($L^{LES}_{st}=331.6 mm$) and the relative (to the mean) standard deviation is 0.012. This higher stoichiometric length compared to the previous cold case is due the thermal expansion caused by the high temperature in the chamber. Comparing this result, obtained by this high fidelity numerical simulation to the flame length estimation obtained by the law order model (Eq. \ref{eq:Ls1}) given in table \ref{tab:BC-HOT} ($L^{MOD}_{st}=300mm$), an error with respect to the numerical results of only 10 \% can be noticed. This result is very satisfactory for a such law order model. Thus, for the second time, this law order model is validated and this time in a reacting high pressure oxy-combustion case.  
+At this point, it is worth considering the scaling law developped by Villermaux and Rehab \cite{villermaux2000mixing} for the reacting case. A scaling parameter was shown to lead to a very good agreement in the cold case is $\phi=z/d_1 J^{1/2}_{sw}$. In addition to the ratio of the inlet velocities $r_u$ taken by \cite{villermaux2000mixing}, this last scaling parameter takes into account the density difference between the two flows and the swirl effect on the flame structure. By plotting the numerical results of the evolution of the mixture fraction $Z$ in function of this parameter, one obtains the blue curve in figure \ref{fig:profiles_TZ_ADIAB} (b), to be compared to the experimental scaling law also presented in this figure. The differences between these two curves are reffered to the thermal expension caused by the high increase of the temperature. This effect is taken by considering the equivalent density in the annular flow $\rho_{2,eq}$.  Thus, the final scaling parameter will be $\phi=z/d_1 J^{1/2}_{eq,sw}$ where $J_{eq,sw}=J_{sw} \rho_{2,eq}/\rho_2$. Plotting the result of the evolution of the mixture fraction in function of this parameter, the red curve showed in figure \ref{fig:profiles_TZ_ADIAB} (b) is obtained. Comparing to the experimental results of the scaling law, a good agreement can be observed showing that this model is still validated in the reacting high pressure pure oxy-combustion case. This result leads also to the conclusion that the corrective method introduced by Tacina and Dahm \cite{tacina2000effects} and used by Degeneve \textit{et al} \cite{degeneve2019scaling} is well adapted. 
+ 
+ 
+\subsection*{Isothermal hot case simulation}
+
+\begin{figure}
+   %\centering
+   \begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+       \centering
+       %\includegraphics[width=\linewidth]{fig/T_PR_PDF_isot.png}
+       \includegraphics[width=\linewidth]{fig/T_PR_isot.png}
+       %\caption{ }
+       %\label{fig:YcZad}
+   \end{subfigure}
+      \caption{ Instanteneous fields of the temperature $T$ (a) and the radiative power $P^{R}$ (b) above the injector (up to $28 d_1$) and the PDF of the flame length }
+   \label{fig:fields_TPr_ISOT}
+   \vspace{-0.05 cm}
+\end{figure}
+
+\begin{figure}
+   \centering
+       \includegraphics[width=\linewidth]{fig/PDF_Lf_ISOT.eps}
+      \caption{ Probability  Density  Function  (PDF) of the flame length for the iso-thermal case simulation }
+   \label{fig:PDF_ISOT}
+   \vspace{-0.05 cm}
+\end{figure}
+
+
+The quantification of heat losses from the combustor's wall and the analysis of the effect of these losses on the temperature field and flame length constitute a crucial point in the study of any energy process. For that, the isothermal simulation case (Ox60$_{isot}$) was carried out by fixing a temperature profile on the walls (1800 k on the chamber's walls and a linear function of the radius on the combustor's base from 300 K to 1800 K).  The same injection conditions used for the previous simulations are adopted here.
+Without taking into account radiative heat losses, figure \ref{fig:fields_TPr_ISOT} (a) shows the temperature instantaneous field and the contour corresponding to the maximal temperature above the injector in this simulation case. By comparing with the adiabatic case, convective heat losses effects can be noticed: The temperatures in the flame zone and in the outer recirculation zone (ORZ) are lower than those of the adiabatic case by about 100 and 500 K respectively. Like it has been done for the adiabatic case, the probability density function for the flame length is shown in figure \ref{fig:PDF_ISOT}. Using a normal fitting function a mean flame length of 328.5 mm and a relative standard deviation of 0.016 can be found. Thus, the effect of convective heat losses on the flame length are negligible (reduction of 1 \%). \\
+Finally, it is interesting to calculate the total heat losses and to compare the results to the law-order estimations given above. By integrating the wall heat flux, one obtains a total convective heat losses of $\phi^{conv,num} = 195$ KW witch is within the same order of magnitude of the previous estimation (122 KW) and constitutes 5 \% of the flame thermal power (4 MW). On the other hand, the total radiative power ($P^R$) field above the injector is presented in figure \ref{fig:fields_TPr_ISOT} (b). High radiative emitted power regions correspond to high temperature regions and to negative total radiative power $P^R$. However, positive radiative power are related to high rate of  reabsorbed radiative power  by CO$_2$ and H$_2$O elements mostly present in the burnt gases. By integrating the total radiative power over the volume, one obtains $\phi^{rad,num} = 77$ KW to be compared to 101 KW obtained by the MBL method and to the flame thermal power (4 MW). Thus, despite the very high temperatures, the radiative losses only constitute 2 \% of the overall thermal power. Emitted ($\phi^{e}$) and reabsorbed ($\phi^{a}$) radiative powers were also calculated leading to: $\phi^{e}=628 KW$ and $\phi^{a}=551 KW$. Thus, 88 \% of the emitted power is reabsorbed by the burnt gases witch justifies the relatively law total radiative losses.   
+
+
+\section*{Conclusion}
+The validity of low order models of high-pressure non-premixed pure oxy-flame length has been assessed numerically in this work. High fidelity numerical approaches for turbulence and combustion modeling are used. Numerous large eddy simulations are performed in reacting and non-reacting conditions. \\
+Available experimental data on the mean axial velocity magnitude and the root mean square fluctuations are used to validate the LES numerical setup in the first methane-air non-reacting simulation at atmospheric pressure. The mesh dependence as well as an automatic refinement technique are also investigated. Thanks to this technique, the LES simulation was shown to well reproduce the inner and outer shear layers of the flow with a relatively low computational time. \\
+The other cases correspond to CH$_4$/O$_2$ high pressure (60 bars) LES where experimental data are not available. First, the geometrical dimensions were fixed and some global parameters were estimated : burned gas properties (adiabatic temperature and density), the flame length using the model to be evaluated, the computational time as well as convective and radiative thermal fluxes. \\
+For the second simulation, some instantaneous and time averaged fields were shown and the flame length obtained by the low order model was compared with that obtained by the numerical results. A difference of 3 \% was obtained validating this low order model at high pressure in cold condition. Numerical result for the evolution of the methane mass fraction was also compared to an experimental scaling law from the literature. After introducing factors allowing to take into account the swirl effect and density difference in the scaling law, a very good agreement with the numerical results was found. \\
+The third simulation were carried out in adiabatic reactive case where heat losses were not been considered. The temperature and mixture fraction fields were first analyzed. It was verified that the chemical time of such a reaction is very small and the effect of the combustor's walls confinement was noticed. As for the previous case, comparison between model and numerical flame length were made where only a difference of 10 \% was found verifying the validity of this model in high-pressure oxy-combustion condition. A satisfying agreement was also when comparing with the scaling law by introducing the effect of the temperature increase on the density in this law. \\
+The effects of heat losses are taken into account in the last isothermal simulation. It has been shown that these losses have a slight effect on the flame length. Finally, the radiative heat fluxes are calculated for one instantaneous solution. A high rate of absorption has been obtained. These heat losses were also compared to the estimations given by low order models presented before. Far agreement were found. For future studies, a coupling between the fluid dynamics and the radiative codes may be considered. 
+
+
+%\bibliographystyle{asmems4}
+\bibliographystyle{plain}
+\bibliography{2017_ASME}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{acknowledgment}
+%Thanks go to D. E. Knuth and L. Lamport for developing the wonderful word processing software packages \TeX\ and \LaTeX. I also would like to thank Ken Sprott, Kirk van Katwyk, and Matt Campbell for fixing bugs in the ASME style file \verb+asme2e.cls+, and Geoff Shiflett for creating 
+%ASME bibliography stype file \verb+asmems4.bst+.
+%\end{acknowledgment}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% The bibliography is stored in an external database file
+%% in the BibTeX format (file_name.bib).  The bibliography is
+%% created by the following command and it will appear in this
+%% position in the document. You may, of course, create your
+%% own bibliography by using thebibliography environment as in
+%%
+%% \begin{thebibliography}{12}
+%% ...
+%% \bibitem{itemreference} D. E. Knudsen.
+%% {\em 1966 World Bnus Almanac.}
+%% {Permafrost Press, Novosibirsk.}
+%% ...
+%% \end{thebibliography}
+%
+%% Here's where you specify the bibliography database file.
+%% The full file name of the bibliography database for this
+%% article is asme2e.bib. The name for your database is up
+%% to you.
+%\bibliography{library}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\appendix       %%% starting appendix
+%\section*{Appendix A: Head of First Appendix}
+%Avoid Appendices if possible.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section*{Appendix B: Head of Second Appendix}
+%\subsection*{Subsection head in appendix}
+%The equation counter is not reset in an appendix and the numbers will
+%follow one continual sequence from the beginning of the article to the very end as shown in the following example.
+%\begin{equation}
+%a = b + c.
+%\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%COMBUSTION MODELLING ISOT
+\begin{comment}
+
+
+\subsection*{Combustion modelling}
+There is many approachs allowing to incorporate chemistry into large eddy simulations. The first and most straightforward one would be to find a suitable chemical kinetic mechanism for the studied configuration and to solve scalar transport equations for all the species in the mechanism, and attempt to model the filtered source term in each equation. This is the most reliable way to conserve all the information about the chemistry. However, it suffers from two main limitations. The first problem with this approach is that any realistic kinetic mechanisms can involve tens of species and hundreds of reaction steps, even for fuels such as methane. Thus, one is faced with having to solve a large number of stiffly coupled scalar transport equations. Another problem is that each species transport equation contains a filtered chemical source term, whitch is  that must be modelled. This source term is arbitrary nonlinear function of the scalar variables. Thus, the idea will be to be able to preserve chemical information while minimizing the number of transported scalar variables required.
+
+Non premixed combustion mode is likely employed in the oxy-combustion applications of our interest such as in glass industry, gas turbine combustion chambers \cite{sanz2008qualitative} or catalytic reforming \cite{jourdaine2017comparison} burners. In practicle cases, for these applications, the mixing time for fuel and oxidizer is larger than the chemical reaction time. The process is mixing controlled. Thus, the reaction zone structure is thin diffusion flamelet. For that the Flamelet/Progress Variable (FPV) \cite{pierce2004progress} model is adopted in this study. FPV model enables to describe the turbulent combustion properties through a data base parameterized by a minimum number of transported scalairs. For non-premixed combustion, the mixture fraction $Z$ seems to be the first adequate variable. This mixture fraction $Z$ characterizes the mixing between fuel ($Z=1$) and oxydizer ($Z=0$). Plus, the iso-surface of its stoichiometric value determines the flame position in a very fast chemical reaction. However, mixture fraction does not contain any intrinsic information about chemical reactions. So, the progress variable $c$ witch is between 0 in fresh gas flow and 1 in the burnt gas flow is also introduced. It is defined in our simulation as a linear combination of species $CO_2$ $CO$ and $H_2O$.
+%Moreover, in order to take into account heat losses, the enthalpy of the gas $H$ is also introduced (\cite{ihme2008prediction}).
+Consequently, the filtered transport equations (by introducing Favre filtering) are: 
+%\begin{equation}
+%\label{eq:Z}
+%Z=\frac{1}{\phi+1}(\phi \frac{Y_F}{Y_F^\infty}-\frac{Y_O}{Y_O^\infty}+1)
+%\end{equation}
+\begin{figure}
+   %\centering
+   %\begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+    %   \centering
+      % \includegraphics[width=\linewidth]{fig/Yc-Z-SR.png}
+   %   \includegraphics[width=\linewidth]{fig/YcZ_AD_BIG.png}
+     %  \caption{  }
+       %\label{fig:YcZad}
+  % \end{subfigure}
+   %\begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+    %   \centering
+       %\includegraphics[width=\linewidth]{fig/T-Z-SR.png}
+       \includegraphics[width=\linewidth]{fig/TZ_AD_BIG.png}
+     %  \caption{ }
+       %\label{fig:TZad}
+   %\end{subfigure}
+   \caption{The evolution of the temperature $T$ in $K$ in function of the mixture fraction $Z$ for the flames at different strain rates $SR$ in $s^-1$ used to generate the adiabatic flamelet database}
+   \label{fig:Yc-T-Z-ad}
+   %\vspace{-0.4 cm}
+\end{figure}
+
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{10 pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{5 pt}
+\begin{equation}
+\label{eq:TransportZ}
+\frac{\partial \bar{\rho} \tilde{Z}}{\partial t}+ \nabla . (\bar{\rho} \tilde{u} \tilde{Z}) =  \nabla . (\bar{\rho} (D+D_t) \nabla \tilde{Z}) 
+\end{equation}  
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{10 pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{0 pt}
+\begin{equation}
+\label{eq:Transportc}
+\frac{\partial \bar{\rho} \tilde{c}}{\partial t}+ \nabla . (\bar{\rho} \tilde{u} \tilde{c}) =  \nabla . (\bar{\rho} (D+D_t) \nabla \tilde{c}) + \bar{\rho} \tilde{w_c}
+\end{equation}  
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{15 pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{0 pt}
+%\begin{equation}
+%\label{eq:TransportH}
+%\frac{\partial \bar{\rho} \tilde{H}}{\partial t}+ \nabla . (\bar{\rho} %%%\tilde{u} \tilde{H}) =  \nabla . (\bar{\rho} (D+D_t) \nabla \tilde{H}) + %\bar{\rho} \tilde{w_H}
+%\end{equation} 
+%where $D$ ,$D_t$, $w_c$, $w_H$ are the molecular and turbulent diffusivities the source terms of the progress variable and enthalpy sources terms respectivelly. For adiabatic simulations (without taking into account heat losses), only the filtered mixture fraction and progress variable are transported. 
+where $D$ ,$D_t$, $w_c$ are the molecular and turbulent diffusivities and the source term of the progress variable respectivelly. 
+%For adiabatic simulations (without taking into account heat losses), only the filtered mixture fraction and progress variable are transported. 
+
+When neglecting heat losses, every thermochemical variable $\xi_j^{tab}$ (such as the temperature, the density, species mass fractions, molair weight, source terms, etc.) is obtained from solutions of steady non-premixed flamelet equations solved numerically for different strain rates allowing to describe the S-shape curve and witch constitute the adiabatic flamelet database \cite{pierce2004progress}. These flamelets were carried out in this work using the Grimech 3.0 mechanism \cite{cordiersimulation}. Following the FPV approach, the different variables are then parametrized as a function of the mixture fraction $Z$ and a normalized progress variable $C$ and can be written in function of these two variables ($\xi_j^{tab}=F(Z,C)$ where F represents the relationship obtained from the solution of the steady flamelet equations). Thus, when constructing the progress variable, a bijection is required between the mixture fraction and this progress variable. These variables will be two independant parameters in the table. Figure (\ref{fig:Yc-T-Z-ad}) shows the evolution of the temperature for the flamelets generated for the simulation in this study. Each one of these flamelets is characterized by its strain rate (SR). Maximum temperature is obtained for stochimetric conditions between the fuel and the oxidizer. Previous studies of non-premixed flames at different strain rates (SR) \cite{bai2000laminar} \cite{bai1999rate} show that at small and moderate strain rates, flame temperature is not very sensitive to the variation of the this stain rate. However, at very high strain rates, flame extinction can occur. Figure \ref{fig:Yc-T-Z-ad} (b) shows that even for a relatively high strain rate, the flame can resist. This is considered as an important characteristic for high pressure oxy-combustion. 
+
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{20 pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{15 pt}
+%\begin{equation}
+%\label{eq:tab3D}
+%\xi_j^{tab}=F(Z,C)
+%\end{equation}
+
+\begin{comment}
+Figure (\ref{fig:Yc-T-Z-ad}) shows the evolution of the progress variable (a) and the temperature (b) for the flamelets generated for the simulation in this study. A bijection is required between the mixture fraction and the progress variable. These variables are two independant parameters in the table. Maximum temperature is obtained for stochimetric conditions between the fuel and the oxidizer. Previous studies of non-premixed flames at different strain rates (SR) \cite{bai2000laminar} \cite{bai1999rate} show that at small and moderate strain rates, flame temperature is not very sensitive to the variation of the this stain rate. However, at very high strain rates, flame extinction can occur. Figure \ref{fig:Yc-T-Z-ad} (b) shows that even for a relatively high strain rate, the flame can resist. This is considered as an important characteristic for high pressure oxy-combustion. 
+\end{comment}
+
+
+\begin{comment}
+In order to account for heat losses, this database is then augmented with solutions of unsteady flamelets computed by imposing a radiative source term to each of the steady initial flamelets. The thermochemical variable $xi_j^{tab}$ is then written as :
+
+\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{20 pt}
+\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{0 pt}
+\begin{equation}
+\label{eq:tab3D}
+\xi_j^{tab}=G(Z,C,H)
+\end{equation}
+where G represents the relationship obtained now with this new database.
+Figure (\ref{fig:H-T-Z-isot}) shows the evolution of the enthalpy and temperature as function of $Z$ due to the imposed heat losses of the different unsteady flamelets starting from the adiabatic flamelet at $SR=10000 s^{-1}$. 
+
+\begin{figure}
+   \centering
+   \hspace{-10 mm}
+   \begin{subfigure}[b]{0.55\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/H-Z-H.png}
+       \caption{  }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \hspace{-3 mm}
+   \begin{subfigure}[b]{0.55\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/T-Z-H.png}
+       \caption{ }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \caption{The evolution of the enthalpy $H$ in $J/K$ (a) and the temperature $T$ in $K$ (b) in function of the mixture fraction $Z$ for the unsteady flames (each one characterized by its maximum temperature $T_{max}$) starting from the adiabatic flame of $SR = 10000 s^{-1}$ used to generate the non-adiabatic database}
+   \label{fig:H-T-Z-isot}
+   \vspace{-0.4 cm}
+\end{figure}
+\end{comment}
+
+\begin{comment}
+\begin{figure}
+   \centering
+   %\begin{subfigure}[b]{0.57\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/Yc-Z-Sz.png}
+   %    \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+   \begin{subfigure}[b]{0.8\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/T-Z-Sz.png}
+       %\caption{ }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \caption{The evolution of the filtered  temperature $\tilde{T}$ in $K$ as function of the filtered mixture fraction $\tilde{Z}$ for different segregation factors $S_z$ for the adiabatic flamelet with a strain rate $SR = 10000 s^{-1}$}
+   \label{fig:Yc-T-Z-Sz}
+   \vspace{-0.05 cm}
+\end{figure}
+\end{comment}
+
+In order to calculate filtered variables for the large eddy simulation approach, a probability joint density function (PDF) $\tilde{P}$ is introduced. Each filtered quantity will be given by : 
+
+\begin{equation}
+\label{eq:xifilter}
+\tilde{\xi}_j^{tab} = \int \xi_j^{tab}(Z,c) \tilde{P}(Z,c)dZdc
+\end{equation}   
+
+As done by (\cite{ihme2008prediction}), we assume that the progress variable $c$ and the mixture fraction $Z$ are statistically independent. The joint PDF can then be expressed in terms of the marginal distributions of each parameter:
+
+\begin{equation}
+\label{eq:Pfilter}
+\tilde{P} = \tilde{P}_Z(Z) \tilde{P}_{c}(c) 
+\end{equation} 
+A $\beta$ PDF is used to model the mixture fraction distribution and Dirac functions to model progress variable distribution. The $\beta$ PDF used has the following $\alpha=\tilde{Z} (\frac{1}{S_Z}-1)$ and $\beta=\alpha (\frac{1}{\tilde{Z}}-1)$ parameters, where $\tilde{Z}$ is the filtered mixture fraction and $S_z$ is the segregation factor of the mixture fraction given in function of the mixture fraction's variance. 
+%\begin{equation}
+%\label{eq:beta_param}
+%\alpha = \tilde{Z} (\frac{1}{S_Z}-1)  ;  \beta = \alpha (\frac{1}{\tilde{Z}}-1)
+%\end{equation} 
+%\begin{equation}
+%\label{eq:Sz}
+%S_z = \frac{Z_v}{\tilde{Z}(1-\tilde{Z})}
+%\end{equation} 
+This variance will also be transported and the segragation factor $S_z$ will be the last independant variable for the table database:
+%Figure (\ref{fig:Yc-T-Z-Sz}) shows the evolution of the filtered progress variable $\tilde{Y_c}$ (a) and temperature $\tilde{T}$ (b) as function of the filtered mixture fraction for different segregation factors for the generated adiabatic flamelet with a strain rate $SR = 10000 s^{-1}$ : 
+\begin{itemize}
+  \item $\bullet$ for $S_z=0$, the variance of $Z$ is null and the filtered and un-filtered variables are equal.
+  \item $\bullet$ for $S_z=1$, the mixture between gases at $Z=0$ and $Z=1$ is predominant, and the value of a filtered variable follows a linear variation as a function of $Z$ between its value at $Z = 0$ and at $Z = 1$.
+\end{itemize}
+Finally, we will have a three dimentional 3D table (database) parametrized by $\tilde{Z}$, $S_z$, $C$ (normalized progress variable). Thus, each filtered thermochemical parameter $\tilde{\xi}_j^{tab}$ will be interpolated in function of these variable.  
+
+
+
+\subsection*{Combustion modelling}
+There is many approachs allowing to incorporate chemistry into large-eddy simulations. The first and most straightforward one would be to find a suitable chemical kinetic mechanism for the studied configuration and to solve scalar transport equations for all the species in the mechanism, and attempt to model the filtered source term in each equation. This is the most reliable way to conserve all the information about the chemistry. However, it suffers from two main limitations. The first problem with this approach is that any realistic kinetic mechanisms can involve tens of species and hundreds of reaction steps, even for fuels such as methane. Thus, one is faced with having to solve a large number of stiffly coupled scalar transport equations. Another problem is that each species transport equation contains a filtered chemical source term, whitch is  that must be modelled. This source term is arbitrary nonlinear function of the scalar variables. Thus, the idea will be to be able to preserve chemical information while minimizing the number of transported scalar variables required.
+
+Non premixed combustion mode is likely employed in the oxy-combustion applications of our interest such as in glass industry, gas turbine combustion chambers \cite{sanz2008qualitative} or catalytic reforming \cite{jourdaine2017comparison} burners. In practicle cases, for these applications, the mixing time for fuel and oxidizer is larger than the chemical reaction time. The process is mixing controlled. Thus, the reaction zone structure is thin diffusion flamelet. For that the Flamelet/Progress Variable (FPV) (\cite{pierce2004progress}) model is adopted in this study. FPV model enables to describe the turbulent combustion properties through a data base parameterized by a minimum number of transported scalairs. For non-premixed combustion, the mixture fraction $Z$ seems to be the first adequate variable. This mixture fraction $Z$ characterizes the mixing between fuel ($Z=1$) and oxydizer ($Z=0$). Plus, the iso-surface of its stoichiometric value determines the flame position in a very fast chemical reaction. However, mixture fraction does not contain any intrinsic information about chemical reactions. So, the progress variable $c$ witch is between 0 in fresh gas flow and 1 in the burnt gas flow is also introduced. It is defined in our simulation as a linear combination of species $CO_2$ $CO$ and $H_2O$. Moreover, in order to take into account heat losses, the enthalpy of the gas $H$ is also introduced (\cite{ihme2008prediction}). Consequently, the filtered transport equations (by introducing Favre filtering) are: 
+
+
+%\begin{equation}
+%\label{eq:Z}
+%Z=\frac{1}{\phi+1}(\phi \frac{Y_F}{Y_F^\infty}-\frac{Y_O}{Y_O^\infty}+1)
+%\end{equation}
+
+\begin{figure}
+   %\centering
+   %\begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+    %   \centering
+      % \includegraphics[width=\linewidth]{fig/Yc-Z-SR.png}
+   %   \includegraphics[width=\linewidth]{fig/YcZ_AD_BIG.png}
+     %  \caption{  }
+       %\label{fig:YcZad}
+  % \end{subfigure}
+   %\begin{subfigure}[b]{1\linewidth}        %% or \columnwidth
+    %   \centering
+       %\includegraphics[width=\linewidth]{fig/T-Z-SR.png}
+       \includegraphics[width=\linewidth]{fig/TZ_AD_BIG.png}
+     %  \caption{ }
+       %\label{fig:TZad}
+   %\end{subfigure}
+   \caption{The evolution of the temperature $T$ in $K$ in function of the mixture fraction $Z$ for the flames at different strain rates $SR$ in $s^-1$ used to generate the adiabatic flamelet database}
+   \label{fig:Yc-T-Z-ad}
+   %\vspace{-0.4 cm}
+\end{figure}
+
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{10 pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{5 pt}
+\begin{equation}
+\label{eq:TransportZ}
+\frac{\partial \bar{\rho} \tilde{Z}}{\partial t}+ \nabla . (\bar{\rho} \tilde{u} \tilde{Z}) =  \nabla . (\bar{\rho} (D+D_t) \nabla \tilde{Z}) 
+\end{equation}  
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{10 pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{0 pt}
+\begin{equation}
+\label{eq:Transportc}
+\frac{\partial \bar{\rho} \tilde{c}}{\partial t}+ \nabla . (\bar{\rho} \tilde{u} \tilde{c}) =  \nabla . (\bar{\rho} (D+D_t) \nabla \tilde{c}) + \bar{\rho} \tilde{w_c}
+\end{equation}  
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{15 pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{0 pt}
+\begin{equation}
+\label{eq:TransportH}
+\frac{\partial \bar{\rho} \tilde{H}}{\partial t}+ \nabla . (\bar{\rho} \tilde{u} \tilde{H}) =  \nabla . (\bar{\rho} (D+D_t) \nabla \tilde{H}) + \bar{\rho} \tilde{w_H}
+\end{equation} 
+where $D$ ,$D_t$, $w_c$, $w_H$ are the molecular and turbulent diffusivities the source terms of the progress variable and enthalpy sources terms respectivelly. For adiabatic simulations (without taking into account heat losses), only the filtered mixture fraction and progress variable are transported. 
+
+When neglecting heat losses, every thermochemical variable $\xi_j^{tab}$ (such as the temperature, the density, species mass fractions, molair weight, source terms, etc.) is obtained from solutions of steady non-premixed flamelet equations solved numerically for different strain rates allowing to describe the S-shape curve and witch constitute the adiabatic flamelet database \cite{pierce2004progress}. These flamelets were carried out in this work using the Grimech 3.0 mechanism \cite{cordiersimulation}. Following the FPV approach, the different variables are then parametrized as a function of the mixture fraction $Z$ and a normalized progress variable $C$ and can be written in function of these two variables ($\xi_j^{tab}=F(Z,C)$ where F represents the relationship obtained from the solution of the steady flamelet equations). Thus, when constructing the progress variable, a bijection is required between the mixture fraction and this progress variable. These variables will be two independant parameters in the table. Figure (\ref{fig:Yc-T-Z-ad}) shows the evolution of the temperature for the flamelets generated for the simulation in this study. Each one of these flamelets is characterized by its strain rate (SR). Maximum temperature is obtained for stochimetric conditions between the fuel and the oxidizer. Previous studies of non-premixed flames at different strain rates (SR) \cite{bai2000laminar} \cite{bai1999rate} show that at small and moderate strain rates, flame temperature is not very sensitive to the variation of the this stain rate. However, at very high strain rates, flame extinction can occur. Figure \ref{fig:Yc-T-Z-ad} (b) shows that even for a relatively high strain rate, the flame can resist. This is considered as an important characteristic for high pressure oxy-combustion. 
+
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{20 pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{15 pt}
+%\begin{equation}
+%\label{eq:tab3D}
+%\xi_j^{tab}=F(Z,C)
+%\end{equation}
+
+\begin{comment}
+Figure (\ref{fig:Yc-T-Z-ad}) shows the evolution of the progress variable (a) and the temperature (b) for the flamelets generated for the simulation in this study. A bijection is required between the mixture fraction and the progress variable. These variables are two independant parameters in the table. Maximum temperature is obtained for stochimetric conditions between the fuel and the oxidizer. Previous studies of non-premixed flames at different strain rates (SR) \cite{bai2000laminar} \cite{bai1999rate} show that at small and moderate strain rates, flame temperature is not very sensitive to the variation of the this stain rate. However, at very high strain rates, flame extinction can occur. Figure \ref{fig:Yc-T-Z-ad} (b) shows that even for a relatively high strain rate, the flame can resist. This is considered as an important characteristic for high pressure oxy-combustion. 
+\end{comment}
+
+In order to account for heat losses, this database is then augmented with solutions of unsteady flamelets computed by imposing a radiative source term to each of the steady initial flamelets. The thermochemical variable $xi_j^{tab}$ is then written as :
+
+\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{20 pt}
+\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{0 pt}
+\begin{equation}
+\label{eq:tab3D}
+\xi_j^{tab}=G(Z,C,H)
+\end{equation}
+where G represents the relationship obtained now with this new database.
+Figure (\ref{fig:H-T-Z-isot}) shows the evolution of the enthalpy and temperature as function of $Z$ due to the imposed heat losses of the different unsteady flamelets starting from the adiabatic flamelet at $SR=10000 s^{-1}$. 
+
+\begin{figure}
+   \centering
+   \hspace{-10 mm}
+   \begin{subfigure}[b]{0.55\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/H-Z-H.png}
+       \caption{  }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \hspace{-3 mm}
+   \begin{subfigure}[b]{0.55\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/T-Z-H.png}
+       \caption{ }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \caption{The evolution of the enthalpy $H$ in $J/K$ (a) and the temperature $T$ in $K$ (b) in function of the mixture fraction $Z$ for the unsteady flames (each one characterized by its maximum temperature $T_{max}$) starting from the adiabatic flame of $SR = 10000 s^{-1}$ used to generate the non-adiabatic database}
+   \label{fig:H-T-Z-isot}
+   \vspace{-0.4 cm}
+\end{figure}
+
+\begin{comment}
+\begin{figure}
+   \centering
+   %\begin{subfigure}[b]{0.57\linewidth}        %% or \columnwidth
+   %    \centering
+   %    \includegraphics[width=\linewidth]{fig/Yc-Z-Sz.png}
+   %    \caption{  }
+   %    %\label{fig:YcZad}
+   %\end{subfigure}
+   \begin{subfigure}[b]{0.8\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/T-Z-Sz.png}
+       %\caption{ }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \caption{The evolution of the filtered  temperature $\tilde{T}$ in $K$ as function of the filtered mixture fraction $\tilde{Z}$ for different segregation factors $S_z$ for the adiabatic flamelet with a strain rate $SR = 10000 s^{-1}$}
+   \label{fig:Yc-T-Z-Sz}
+   \vspace{-0.05 cm}
+\end{figure}
+\end{comment}
+
+In order to calculate filtered variables for the LES, a probability joint density function (PDF) $\tilde{P}$ is introduced. Each filtered quantity will be : 
+
+\begin{equation}
+\label{eq:xifilter}
+\tilde{\xi}_j^{tab} = \int \xi_j^{tab}(Z,Y_c,H) \tilde{P}(Z,Y_c,H)dZdY_cdH
+\end{equation}   
+
+As done by (\cite{ihme2008prediction}), we assume that $Y_c$ $H$ and $Z$ are statistically independent. The joint PDF can then be expressed in terms of the marginal distributions of each parameter:
+
+\begin{equation}
+\label{eq:Pfilter}
+\tilde{P} = \tilde{P}_Z(Z) \tilde{P}_{Yc}(Y_c) \tilde{P}_H(Z)  
+\end{equation} 
+A $\beta$ PDF is used to model the mixture fraction distribution and Dirac functions to model progress variable and enthalpy distributions. The $\beta$ PDF used has the following $\alpha=\tilde{Z} (\frac{1}{S_Z}-1)$ and $\beta=\alpha (\frac{1}{\tilde{Z}}-1)$ parameters, where $\tilde{Z}$ is the filtered mixture fraction and $S_z$ is the segregation factor of the mixture fraction given in function of the mixture fraction's variance. 
+%\begin{equation}
+%\label{eq:beta_param}
+%\alpha = \tilde{Z} (\frac{1}{S_Z}-1)  ;  \beta = \alpha (\frac{1}{\tilde{Z}}-1)
+%\end{equation} 
+%\begin{equation}
+%\label{eq:Sz}
+%S_z = \frac{Z_v}{\tilde{Z}(1-\tilde{Z})}
+%\end{equation} 
+This variance will also be transported and the segragation factor $S_z$ will be the last independant variable for the table database:
+%Figure (\ref{fig:Yc-T-Z-Sz}) shows the evolution of the filtered progress variable $\tilde{Y_c}$ (a) and temperature $\tilde{T}$ (b) as function of the filtered mixture fraction for different segregation factors for the generated adiabatic flamelet with a strain rate $SR = 10000 s^{-1}$ : 
+\begin{itemize}
+  \item $\bullet$ for $S_z=0$, the variance of $Z$ is null and the filtered and un-filtered variables are equal.
+  \item $\bullet$ for $S_z=1$, the mixture between gases at $Z=0$ and $Z=1$ is predominant, and the value of a filtered variable follows a linear variation as a function of $Z$ between its value at $Z = 0$ and at $Z = 1$.
+\end{itemize}
+Finally, we will have a four dimentional 4D table (database) parametrized by $\tilde{Z}$, $S_z$, $C$ (normalized progress variable) and $H$. Thus, each filtered thermochemical parameter $\tilde{\xi}_j^{tab}$ will be interpolated in function of these variable. 
+\end{comment}
+
+%%%%%%radial
+\begin{comment}
+\subsubsection{radial velocity}
+
+\begin{figure}
+   \hspace{-11 mm}
+   \centering
+   \begin{subfigure}[b]{0.38\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/v_expe.png}
+       \caption{ experimental }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \hspace{-3 mm}
+   \begin{subfigure}[b]{0.38\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/v_num1.png}
+       \caption{ Mesh1 }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \hspace{-3 mm}
+   \begin{subfigure}[b]{0.38\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/v_num2.png}
+       \caption{ Mesh refined }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \caption{comparison of 2D fields of the radial velocity $u_{\theta}$ above the injector. $z$ is the axial dimension, $x$ the radial dimension and $d_1$ the inner diameter}.
+   \label{fig:fields-v}
+   \vspace{-0.05 cm}
+\end{figure} 
+
+\begin{figure}
+   \hspace{-4 mm}
+   %\centering
+   \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/ur_d1.png}
+       \caption{ }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \hspace{-3 mm}
+   \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/ur_d2.png}
+       \caption{  }
+       %\label{fig:TZad}
+   \end{subfigure}
+   \hspace{-1 mm}
+   \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/ur_d4.png}
+       \caption{  }
+       %\label{fig:YcZad}
+   \end{subfigure}
+      \hspace{-0.35 mm}
+   \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/ur_d6.png}
+       \caption{  }
+       %\label{fig:YcZad}
+   \end{subfigure}
+      \hspace{-1 mm}
+   \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/ur_d8.png}
+       \caption{  }
+       %\label{fig:YcZad}
+   \end{subfigure}
+      \hspace{-2 mm}
+   \begin{subfigure}[b]{0.33\linewidth}        %% or \columnwidth
+       \centering
+       \includegraphics[width=\linewidth]{fig/ur_d10.png}
+       \caption{  }
+       %\label{fig:YcZad}
+   \end{subfigure}
+   \caption{comparison radial velocity $u_\theta$ profiles for different heights above the injector}
+   \label{fig:profiles-v}
+   \vspace{-0.05 cm}
+\end{figure}
+
+Figures (\ref{fig:fields-v}) and (\ref{fig:profiles-v}) show respectivelly the fields and profiles (for different heights above the burner) of the radial velocity given by the experimental data and those obtained by the numerical simulation for the two meshes. Good agreement can be noticed espacially for the refined mesh. Differences can be explained by measurment uncertainities at law velocity. The measurment diagnostic was calibrated for velocities of the order of $20 m/s$ in order to minimize the error for the axial velocity. Thus, it may lead to some imprecision for velocities of order of $1 m/s$. This law level of radial velocity is due to the absence of swirl at inlet conditions. 
+\end{comment}
+
+\begin{comment}
+
+\begin{abstract}
+{\it Impact of the diverging cup angle of a swirling injector on the flow pattern and stabilization of technically premixed flames is investigated both theoretically and experimentally with the help of laser diagnostics. Recirculation enhancement with a lower position  of the internal recirculation zone and a flame leading edge protruding further upstream in the swirled flow are observed as the injector nozzle cup angle is increased. A theoretical analysis is carried out to examine if this could be explained by changes of the swirl level as the diffuser cup angle is varied. It is  shown that pressure effects need in this case to be taken into account in the swirl number definition and expressions for its variation through a diffuser are derived. They indicate that changes of the swirl level including or not the pressure contribution to the axial momentum flux cannot explain the changes observed of the flow and flame patterns in the experiments. The swirl number without the pressure term, designated as pressure-less swirl, is then determined experimentally for a set of diffusers with increasing quarl angles under non-reacting conditions and the values found corroborate the predictions. It is finally shown that the decline of axial velocity and the rise of adverse axial pressure gradient, both due to the cross section area change through the diffuser cup, are the dominant effects that control the leading edge position of the  internal recirculation zone of the swirled flow. This in turn is used to develop a model for the change of this position as the quarl angle varies that shows good agreement with experiments.}
+
+\end{abstract}
+
+\section*{INTRODUCTION}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Providing a rotational motion to the flow leading to the formation of an Internal Recirculation Zone (IRZ) is  widely used to ease flame stabilization in high power combustion systems. %The well known swirl effect enhances jet growth, mixing and decay of inert flows and exhibits large scale effects on the shape, stability and volumic heat release of flames. When a certain degree of swirl is reached, the increase in axial and radial pressure gradients yields an inner recirculation zone (IRZ) of hot burnt gases at low mean velocities, favoring the stabilization of flames. Widely used in practical combustion systems such as gas turbines or boilers, swirling flows are still under investigations today. 
+Despite extensive studies, see for example the pioneering work in \cite{RAWE1981667}, the stabilization mechanisms of these flames are still the topic of many recent investigations due to their complex structure and dynamics \cite{Syred200693}. 
+
+The structure of a swirling flame is known to depend largely on the structure of the irrotational jet exhausting the injector \cite{beer1972combustion,Gupta1984, Cheng20001305, chterev2015precession}. The swirl number \cite{beer1972combustion,Gupta1984}, the inlet geometry of the injector \cite{burmberger2006designing,Toh2009} and the flow confinement \cite{fanaca2010comparison,Mongia:2011uq} are the main parameters affecting the flame topology. Heat losses to the chamber walls are also known to alter the structure of the reacting flow \cite{chong2009influence,Guiberti_2015_PCF}. A central bluff-body  \cite{Chigier:1964fr,Syred200693,Terhaar2014} and a diffuser \cite{Chigier:1964fr,Gupta1984,VANOVERBERGHE2003,Syred200693,Therkelsen:2010db,Jourdaine_2016_ASME} constitute other widely used elements to enhance the stabilization of swirling flames. In high power systems, it is however more suitable to operate without any central insert to reduce the thermal stress on the solid components of the injector.
+
+The diverging cup of the injector nozzle, also designated by quarl or diffuser, drastically changes the topology of the flow so as to favor flame stabilization inside the IRZ. Gupta \textit{et al.}\cite{Gupta1984} and Vanoverberghe \textit{et al.} \cite{VANOVERBERGHE2003} investigated the combination of swirl, quarl and bluff-body to identify and classify the different flow patterns observed under non reacting flow conditions.
+Increasing the quarl angle enhances the recirculation of mass flow in the IRZ \cite{Weber1992,VANOVERBERGHE2003}, increases its size and lowers its position along the burner axis \cite{Chigier:1964fr,Gupta1984} improving flame stabilization. Adding a quarl is often used to improve the operability of a burner over a wider range of flow operating conditions. However,  as already noticed in \cite{VANOVERBERGHE2003}, there is still yet a limited number of studies on effects of the quarl for aerodynamically swirl-stabilized flames in setups without bluff-body.
+
+Both quarl and swirl separately provide interesting features to the resulting flow, yet the quarl may alter the value of the swirl number through the evolution of the velocity profiles.  Chigier and Beer \cite{Chigier:1964fr} introduced the swirl number $S=G_{\theta}/(R G_z)$ to characterize the level of swirl of the flow, where $ G_\theta =\int_{A}  \rho r u_\theta u_z \dif A$ is the axial flux of tangential momentum, $G_z = \int_{A} \left( \rho  u_z^2 + (p-p_\infty) \right) \dif A $ the axial momentum flux and $R$ a characteristic dimension of the injector. %\textcolor{red}{\sout{Their measurements revealed that $G_\theta$ and $G_z$ remain constant all along an unconfined swirling jet even when the injector is equipped with a central bluff-body or with a converging or diverging nozzle. Similarly,}} Mahmud \textit{et al.} \cite{Mahmud1987} \textcolor{red}{\sout{also report in their experiments conducted with a coaxial injector and a central bluff-body the conservation of both $G_z$ and $G_\theta$ momentum fluxes through a $30^\circ$ diverging quarl. }}
+
+Gupta  and Lilley (p. 18 in \cite{Gupta1984})  have theorized the impact of a change of section on the value of the swirl number. As in the majority of the works \cite{Syred1974}, they assume the pressure term in $G_z$ to be negligible. This approximation leads to the definition of a pressure-less swirl number $\widetilde{S}$ calculated with $\widetilde{G}_z = \int_{A} \rho  u_z^2 \dif A$. Assuming simplified velocity profiles, they model the impact of a quarl on the swirl number as:
+\begin{equation}
+\label{eq:Gupta}
+\frac{\widetilde{S}_2}{\widetilde{S}_1}=\frac{R_2}{R_1} 
+\end{equation}
+where $R_1$ and $R_2$ are the radius of the diffuser cup inlet and outlet sections. Experiments presented in this work show that Eq.~(\ref{eq:Gupta}) cannot be a substitute for the complex velocity profiles issuing from a swirling injector. This problem has motivated further investigation. Change of the swirl level through a change of the cross section area of the flow passage is here revisited both experimentally and theoretically.\\
+
+
+
+Measuring the swirl number $S$ raises experimental difficulties.  As reported in many studies, swirling flows of practical interest are highly turbulent \cite{Syred1974}, and Reynolds averages of the axial and azimuthal momentum fluxes lead to new contributions associated to turbulent fluctuations $\overline{{G}_z}_t = \int_{A} \left( \rho ( \overline{u_z}^2 + \overline{u_z'^2}) + (\overline{p}- p_\infty) \right)\dif A$ and  $\overline{{G}_\theta}_t = \int_{A} \rho r(\overline{u_\theta}\, \overline{u_z} + \overline{u_\theta' u_z'}) \dif A$. In the outer regions of the swirling jet, the mean velocities $\bar u_z$ and $\bar u_\theta$ drop to zero whereas the turbulent components $\overline{u'^2}_z$ and $\overline{u'_zu'}_\theta$ due to the recirculating flow pattern remain significant. Similarly, $\overline{p}-p_{\infty}$ is large when compared to $ \rho \overline{u_z}^2$ in the outer region of the jets. Hence, measuring $\overline{{G}_z}_t$ and $\overline{{G}_\theta}_t$ in a turbulent swirling flow requires to probe the velocity field up to the vicinity of the walls where the turbulent and pressure terms are weighted by $r^2$ to estimate these integrals. 
+
+Some authors \cite{Gupta1984,Mattingly1986} suggest to integrate by part the axial momentum flux, which brings out the static pressure on the wall. Thanks to wall pressure measurements, Mattingly {\it et al.}\cite{Mattingly1986} verified the conservation of axial momentum flux in a tube of constant cross section area.   Other authors directly measured the radial distribution of static pressure within the flow with the help of Pitot probes\cite{Gupta1984,Mattingly1986}. Chigier {\it et al.}\cite{Chigier:1964fr}, Dixon {\it et al.}\cite{Dixon1983} and Mahmud {\it et al.}\cite{Mahmud1987} found that both $G_z$ and $G_\theta$ momentum fluxes remain constant within a straight tube provided effects of pressure is included. However, Pitot probes are intrusive devices and smooth out turbulent fluctuations.
+
+These previous investigations show that measuring the swirl number is a difficult task due to the additional contributions from pressure and turbulent fluctuations. Effects of turbulence are discarded in the present work and a theoretical analysis is carried out to estimate the contribution from the pressure term in the swirl level due to changes of the cross section area through an injector. This problem constitutes the first  objective of this article. The second objective is to understand how the flow structure and flame stabilization are modified when the angle of the diffuser cup of the injector is changed. An experimental analysis is conducted to isolate effects of the quarl angle, all other parameters remaining fixed. It is shown  that measurements of the pressure-less swirl number do not obey to Eq.~(\ref{eq:Gupta}) and this has motivated a further theoretical investigation of the swirl number evolution through a diffuser with the introduction of shape factors.  It is finally shown that independently of the definition of the swirl number, changes of the swirl level cannot be used to explain the changes of the average reacting and non-reacting flow fields observed in the experiments when the injector diffuser cup angle widens. This in turn has led to the development of a new model that predicts the evolution of the leading edge position of the internal recirculation zone of a swirling injector when the quarl angle is varied.
+
+
+\begin{figure}[t!]
+\centering
+     \includegraphics[width=1\linewidth]{pdf/Chamber.pdf}
+    \caption{OXYTEC atmospheric test-rig.}
+   \label{fig:chamber}
+   \vspace{-0.5cm}
+\end{figure}
+
+
+
+
+
+The article is organized as follows. The experimental setup is described in the next section, followed by an analysis of the flame and flow structures in reacting conditions for varying quarl angles. Measurements of swirl number on a pressure-less basis are then carried out under-non reacting conditions. Theory is then pushed forward to include pressure effects and examine the impact of a smooth change of the cross section section area of the injector on the swirl number. Finally, a model is developed to account for the displacement of the position of the IRZ in the combustion chamber when the diverging cup angle is modified.
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%
+\section*{EXPERIMENTAL SETUP}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+The test rig and the optical diagnostics are the same as those used to investigate effects of swirl  on the stabilization of technically premixed methane/air flames in a configuration where the injection nozzle  is equipped with a diverging cup angle $\alpha=10^\circ$ \cite{Jourdaine_2016_ASME}. This setup was also used to compare the stabilization of CO$_2$- and N$_2$-diluted oxy-methane flames and examine rules for switching between air- to oxy-combustion operating mode with the same injector \cite{Jourdaine_2016_Fuel,Jourdaine_2016_ASME}. Only the main elements of the test rig are briefly described below. The reader is referred to \cite{Jourdaine_2016_Fuel,Jourdaine_2016_ASME,Jourdaine_2017_ASME} for more details.
+
+
+Figure~\ref{fig:chamber} shows a schematic of the Oxytec combustor. The  combustion chamber has a square cross section with dimensions $150\times150\mbox{~mm$^2$}$ and 250~mm in length. Four quartz windows provide a large optical access to the combustion region. The burnt gases are exhausted to the atmosphere at ambient pressure through a nozzle with an area contraction ratio of 0.8. The combustion chamber dump plane in contact with the burnt gases is cooled by water circulation. Its temperature is kept constant and equal to $T_p=450~\mbox{K}$ during all experiments. 
+
+
+%
+%\begin{figure*}[t!]
+%\centering
+%%     \includegraphics[width=1\linewidth, trim={0 0 0 0mm},clip]{Chim_S085.pdf}
+%     \begin{subfigure}[$\alpha=0^{\circ}$]{
+%\includegraphics[width=0.20\linewidth, trim={0 0 0 15mm},clip]{S085_P13_b10_touv250ms_g40}
+%%             \label{fig:085_0}}
+%     \end{subfigure}
+%
+%
+%%    \caption{OH* intensity distribution as a function the diverging cup angle $\alpha$. Grey elements indicate solid components of the combustor.}
+%%   \label{fig:chim085}
+% % \vspace{-0.5cm}
+%\end{figure*}
+
+Methane and air are mixed within a swirling injector sketched in Fig.~\ref{fig:inj_sc}. The swirling motion is produced by an axial-plus-tangential entry swirl generator where  $\dot m_\theta$ and $\dot m_z$ are the mass flowrates injected tangentially and axially. Assuming an uniform axial flow profile and a solid body rotation for the azimuthal velocity, a geometrical swirl number S$_0$ can be defined at the injector outlet  \cite{Gupta1984}:
+\begin{equation}
+\mathrm{S}_0 = \frac{\pi}{2}\frac{Hr_0}{ Nl L}\frac{1}{1+\dot{m}_z/\dot{m}_\theta}
+\label{eq:swirl}
+\end{equation}
+where $H$ is the distance separating the tangential injection channels from the burner axis, $r_0$ the injector radius and $l$ and $L$ the width and the height of the $N$ tangential injection channels. This device was designed to produce geometrical swirl numbers ranging from S$_0=0$ to 1.75 with $N=2$ slits. More details on the fuel injection system are given in \cite{Jourdaine_2017_ASME}. 
+
+\begin{figure}[t]
+\centering
+	     \includegraphics[width=1\linewidth]{eps/Sch_inj_5}
+    \caption{Sketch of the injector. (a) Axial cut. (b) Transverse cut through the swirler.}
+   \label{fig:inj_sc}
+   \vspace{-0.5cm}
+\end{figure}
+
+
+\begin{figure*}[t!]
+\centering
+     \begin{subfigure}[b]{0.19\linewidth}
+\includegraphics[width=\linewidth, trim={0 0 0 0mm},clip]{pdf/S085_P13_b0_touv250ms_g40_.pdf}
+			\caption{$\alpha=0^{\circ}$}             
+             \label{fig:profile_PIV0}
+     \end{subfigure}
+      \begin{subfigure}[b]{0.19\linewidth}
+\includegraphics[width=\linewidth, trim={0 0 0 0mm},clip]{pdf/S085_P13_b5_touv250ms_g40_2.pdf}
+			\caption{$\alpha=5^{\circ}$}  
+             \label{fig:profile_PIV5}
+     \end{subfigure}
+    \begin{subfigure}[b]{0.19\linewidth}
+\includegraphics[width=\linewidth, trim={0 0 0 0mm},clip]{pdf/S085_P13_b10_touv250ms_g40.pdf}
+			\caption{$\alpha=10^{\circ}$}  
+             \label{fig:profile_PIV10}
+     \end{subfigure}  
+      \begin{subfigure}[b]{0.19\linewidth}
+\includegraphics[width=\linewidth, trim={0 0 0 0mm},clip]{pdf/S085_P13_b30_touv250ms_g40.pdf}
+			\caption{$\alpha=30^{\circ}$}  
+             \label{fig:profile_PIV30}
+     \end{subfigure}
+     \begin{subfigure}[b]{0.19\linewidth}
+\includegraphics[width=\linewidth, trim={0 0 0 0mm},clip]{pdf/S085_P13_b45_touv250ms_g25.pdf}
+			\caption{$\alpha=45^{\circ}$}  
+             \label{fig:profile_PIV45}
+     \end{subfigure}
+\caption{OH* intensity distribution as a function the diverging cup angle $\alpha$. Grey elements indicate solid components of the combustor. Dimensions are in millimeters.}
+   \label{fig:chim085}
+      \vspace{-0.2cm}
+\end{figure*}
+
+
+The methane/air mixture leaves the swirler through a $r_0=10$~mm cylindrical channel and flows into the combustion chamber through an end piece equipped with a diffuser with a variable cup angle $\alpha$. The height of the diffuser cup is  $h=10$~mm. Partially premixed conditions are achieved at the injector outlet at $z/r_0=0$ \cite{Jourdaine_2016_ASME} and fully premixed conditions were confirmed by Large Eddy Simulations at $z/r_0=0.5$ in a region where the flame leading edge is stabilized for most operating conditions \cite{Jourdaine_2017_ASME}. %ourdaine_2015
+
+Care was taken to wait for thermal equilibrium of the chamber solid components before making measurements \cite{Guiberti_2015_CF}. OH* chemiluminescence images  are used to investigate the mean structure taken by the flames. OH Planar Laser Induced Fluorescence (OH-PLIF) snapshots are used to determine the probability of presence of the flame front in the axial plane of the test-rig.  A set of 1500 images is taken to deduce the probability of presence of the hot burnt gases.  The gradient of these images is then used to detect the flame front between the fresh gases and the hot burnt gases. Averages of these images yield the probability of presence of the flame front. A series of tests were made to check the statistical convergence of the data and the sensitivity of the results to the threshold level used to detect the flame front. The reader is referred to \cite{Jourdaine_2017_ASME} for more details on the post-processing. 
+
+%With OH-LIF measurements, only the hot burnt gases directly produced by the flame appear on the images. The burnt gases that are cooled by heat losses are not accounted for with this technique. In the regions filled with burnt gases at low temperature, the chemical equilibrium of burnt gases is shifted towards H$_2$O at the expense of the OH radical due to the drop of enthalpy \cite{lam2013a}. The burnt gases probability deduced from OH-PLIF images in these zones is falsely attributed to a low value. But some gradient between the fresh gases and the cooled burnt gases can still be detected by the contour detection algorithm. 
+
+
+
+These experiments are completed by Particle Image Velocimetry (PIV) measurements in cold and hot flow conditions in the axial and different transverse planes above the injector. PIV and OH-PLIF are here combined to reveal the mean structure taken by the flow and flame produced by the axial-plus-tangential swirler. Two component Laser Doppler Velocimetry (LDV) measurements have also been carried out to determine the axial and tangential velocity components of the non reacting swirling flow at the injector outlet with a high degree of accuracy required to determine the (pressure-less) swirl number. The diagnostics, the tests made and the different post-processing techniques are fully described in \cite{Jourdaine_2016_ASME,Jourdaine_2017_ASME}.
+
+
+All experiments presented in this work are conducted at the equivalence ratio $\phi=$0.95 for a thermal power $P=$13~kW corresponding to a Reynolds number Re$=$18\,000 based on the injection tube diameter $2r_0=20$~mm and the bulk temperature $T_u=293$~K. The geometrical swirl number calculated with Eq.~(\ref{eq:swirl}) is also kept constant and equal to $S_0=0.85$. Note that effects of the diverging cup are not taken into account in this definition of the swirl number. 
+
+
+
+\section*{FLAME AND FLOW STRUCTURES}
+
+Before examining the flame structure, it is worth attempting a dimensional analysis of the main parameters controlling the flame shape. The height of the combustor being fixed, the main important parameters identified in the scientific literature  are the injection Reynolds number Re \cite{lefebvre2010gas}, the quarl angle $\alpha$ \cite{Weber1992,VANOVERBERGHE2003}, the swirl number S \cite{beer1972combustion,Gupta1984} and the confinement ratio $C_r=W^2/(\pi r_2^2)$ \cite{Mongia:2011uq,fanaca2010comparison}, where $W=150$~mm is the width of the combustion chamber and $r_2$  is the nozzle radius at the diffuser cup outlet. The quarl angle varies here from $\alpha=0$ to $45^o$ and $18\le C_r\le 72$. As a consequence, the injector of the Oxytec test-rig operates according to \cite{fanaca2010comparison} in the free-jet regime. This regime is typical of a swirling jet issuing into unconfined atmosphere and of systems with sidewalls aways from the injector nozzle. 
+
+Figure~\ref{fig:chim085} shows the distribution of the OH* spontaneous light emission for different quarl angles $\alpha$, all other geometrical and flow parameters remaining constant.  With a straight injector, $\alpha=0^o$,  the flame is lifted in a V-shape above the burner with a flame leading edge far from the burner exit despite the large swirl level $S_0=0.85$ imparted to the flow. As $\alpha$ increases from $5^o$ to $30^o$, the flame widens in the transverse direction, shrinks in the axial direction and its leading edge moves further upstream towards the injector. For larger values $\alpha\geq45^{\circ}$, the flame suddenly flattens and the combustion reaction takes place in the boundary layer close to the combustor dump plane. The flame takes in these conditions a torus shape in the so-called wall jet regime \cite{Gupta1984,Chigier:1964fr}, also referred as Coanda stabilized flame \cite{VANOVERBERGHE2003}.
+
+\begin{figure*}[t!]
+\begin{center}
+     \includegraphics[width=1\linewidth, trim={0 0 0 0mm},clip]{eps/LIF_PIV_alpha_cut_new.eps}
+     \includegraphics[width=1.05\linewidth, trim={0 0 0 0mm},clip]{pdf/PIV_bol_v2.pdf}
+ \caption{Top: Probability of presence of the flame front deduced from OF-PLIF measurements in an axial plane with the overlaid velocity fields. The grey lines delineate the positions where the flame front is present 20\% and 10\% of the time. Bottom:  Velocity field colored by the velocity magnitude $|\bar u|=(\bar u_z^2+\bar u_x^2)^{1/2}$ obtained by PIV. The black contour delineates the position of the IRZ where the axial velocity $\bar u_z$ is zero.}
+   \label{fig:LIF-PIV}
+\end{center}
+\end{figure*}
+
+
+The same experiments were repeated at a lower swirl number S$_0=0.75$ in \cite{Jourdaine_2016_ASME}, wherein a more detailed study is carried out on the influence of the swirl level on the flame topology. The same observations were made.  Increasing the quarl angle moves the flame leading edge upstream, reducing the flame length and widening its shape in the radial direction. These observations are common to many studies conducted with different types of swirling injectors in premixed and non-premixed combustion modes with gaseous or liquid fuel injections \cite{Gupta1984,VANOVERBERGHE2003}. 
+
+
+
+
+
+Further analysis is carried out by examining the structure of the flow field and flame in an axial plane. Figure~\ref{fig:LIF-PIV} shows on the top the probability of presence of the flame front superimposed to the velocity field obtained by PIV in reacting conditions for different diffuser cup angles, all other parameters remaining fixed. The grey countors represent the position where the flame front is present 20\% (inner contour) and 10\% (outer contour) of the time. The position of the IRZ is represented by the black contour. The position of the Outer Recirculation Zones (ORZ) is not reproduced in this figure.  The bottom images show the same velocity fields on a slightly  zoomed field of view together with the magnitude $|\bar v|=(\bar u_z^2+\bar u_x^2)^{1/2}$ of the  velocity vectors $\overline{\mathbf{v}}=\bar u_z\mathbf{e}_z+ \bar u_x \mathbf{e}_x$ represented by the colored scale. The black line delineates the position where the axial velocity $\bar u_z=0$ is null, \textit{i.e.} the boundary of the IRZ. The contours of zero axial velocity delineating the ORZ are not represented here.
+
+ 
+For a straight injection nozzle $\alpha=0^{\circ}$, the V-shaped flame features a  leading edge front located along the burner axis at a distance $z_f/r_0=1.8$ above the injector outlet, identified here as a probability of presence of the flame front equal to $p=20\%$. The stagnation point  corresponding to the leading edge of the IRZ $z_{SP}/r_0=5.9$ is also located along the burner axis and  lies far away from the flame. Note also that the maximum probability of presence of the flame front does not exceed in this case $p<30\%$ highlighting the strong intermittency of the combustion process, a characteristic of turbulent swirling flames stabilized far away from the injector outlet.  It can be noticed that the combustion reaction takes also place between the ORZ and the outer swirling jet shear layer. The flame takes  in this case intermittently an M-shape, with rapid transitions back to its V-shape. The probability of presence of the M-shape structure remains small $p<20\%$ due to the high dump ratio of the combustor leading to high thermal losses in the ORZ \cite{Guiberti_2015_PCF}. The ORZ is too cold to sustain combustion between the ORZ and the outer shear layer of the swirling jet. 
+
+When the injection nozzle is equipped with a diffuser cup angle $\alpha=10^{\circ}$, the flame still mainly features a V-shape, but lies closer to the injector outlet with a leading edge front at $z_f/r_0=1.0$. The probability of presence of the flame front  increases above $p\ge 20\%$ with a large fraction with $p\sim 35\%$ over most of the flame volume. The flame leading edge front now lies on both sides of the burner axis, above the regions featuring the lowest axial velocities at $|x|/r_0=0.8$. This is due to the peculiar structure of the jet flow at the nozzle outlet produced by this axial-plus-tangential injector. The flame leading edge preferentially lies in a region comprised between the burner axis where the axial velocity reaches a local maximum and the inner shear layer of the swirling jet at $|x|/r_0=1.2$ where the velocities are the highest. The trace of the statistical distribution of the leading edge reaction layer follows the axial velocity profile and also takes a smoothed but discernable W-shape. One may also note that the leading edge of the IRZ at $z_{SP}/r_0=3.0$ is no longer located along the burner axis. The flame front probability of presence at the interface between the ORZ and the outer shear layer of the swirling jet has slightly increased with values $p>20\%$, meaning that the probability to find the M-shaped flame distribution has slightly increased compared to injection with the straight injection tube ($\alpha=0^o$).  
+
+When the diffuser cup angle is further increased to  $\alpha=30^{\circ}$,  the flame now switches intermittently between a V-shape and an M-shape with about the same probability. The IRZ leading edge moves very close to the maximum probability of presence of the flame front with a leading edge position at $z_{SP}/r_0=0.8$ and is off-axis by $|x|/r_0=1.0$. Note that the stagnation point of the IRZ along the burner axis lies much further away at $z_{SP}/r_0=1.8$. The flame leading edge position also lies off-axis at the same distance  $z_f/r_0=0.8$ as the leading edge of the IRZ, but is pushed radially away from the burner axis at $|x|/r_0=1.5$. The main difference with results for a cup angle $\alpha=10^o$ is that for $\alpha=30^o$ the IRZ now protrudes far upstream close to the injector outlet. This protruding IRZ shrinks the size of the flame in the axial direction with almost no reaction left in the central region of the flow and pushes the combustion zone toward the side of the burner. The probability of presence of the flame front remains lower than $p<15\%$  along the burner axis. The combustion reaction is now essentially concentrated in the internal and external shear layers of the flow between the IRZ and ORZ.  On average the trace of the distribution of the leading edge of the flame reaction layer lies again in the zones of low axial velocities at $|x|/r_0=1.0$ and takes a W-shape. This W-shape is now more apparent than for the case with $\alpha=10^{\circ}$.
+
+\begin{figure}[t!]
+\centering
+     \includegraphics[width=0.85\linewidth, trim={0 0 0 0mm},clip]{eps/Z_SP}
+    \caption{Angle $\beta$ (black disks) of the swirling jet flow at the injector outlet  and position of the IRZ leading edge stagnation point $z_{SP}/r_0$ measured (empty diamonds) and predicted by Eq.~( \ref{eq:stagnation}) (continuous line) as function of the diffuser cup angle $\alpha$.}
+   \label{fig:beta}
+ % \vspace{-0.5cm}
+\end{figure}
+
+
+For a diffuser cup angle $\alpha=45^{\circ}$, the flame takes a torus shape stabilized close to the dump plane of the injector in a wall jet regime. This flow regime is characterized by the disappearance of the ORZ and a predominant IRZ occupying almost all the combustion chamber except the central region of the flow close to the injector outlet.  The probability of presence of the flame front increases now up to values $p\sim 40\%$ and the reaction mainly takes place along the arms of the swirling jet. In this wall jet regime, the IRZ doesn't move further upstream, but grows bigger in the transverse direction because the axial velocity at the burner outlet is high enough to avoid flashback. This feature is a specificity of the axial-plus-tangential swirler used in this study allowing independent control of the axial and tangential mass flowrates injected in the burner. This  is used to prevent flashback \cite{Jourdaine_2016_ASME,Terhaar2016}.
+
+
+
+Effects of the quarl angle are further analyzed  by measuring the jet opening angle $\beta$ of the swirling jet.  This angle represented in the second image at the bottom in Fig.~\ref{fig:LIF-PIV} is defined as the angle between the vertical axis and the line of maximum velocity reached by the jet flow over the first 10~mm above the injector outlet. The evolution of $\beta$ is plotted in Fig.~\ref{fig:beta} as a function of the diffuser cup angle $\alpha$.  The position of the stagnation point $z_{SP}$ defined as the lowest axial position of the IRZ is also represented in this figure. The angle $\beta$ linearly increases with $\alpha$ below $\alpha\leq30^{\circ}$. It then changes abruptly for $30^{\circ}<\alpha<45^{\circ}$ when the jet switches to the wall jet regime. This analysis confirms that the swirling jet angle $\beta$ regularly increases like the angle $\alpha$ of the diffuser cup as long as the swirling jet flow lies in the free jet regime. 
+
+\begin{figure}[t!]
+\centering
+     \includegraphics[width=0.75\linewidth, trim={0 0 0 0mm},clip]{eps/alpha_stag.eps}
+    \caption{IRZ leading edge position $z_{SP}/r_0$ in non-reacting (black squares) and reacting (empty diamonds) flow conditions, and flame leading edge position $z_f$ (black disks) as a function of the injector diffuser cup angle $\alpha$.}
+   \label{fig:alpha_stag}
+  %\vspace{-0.5cm}
+\end{figure}
+
+
+
+The flow field is now analyzed by comparing  measurements in reacting and non-reacting conditions. Data gathered under non-reacting conditions are not shown here (see \cite{Jourdaine_2016_ASME}). In these experiments, the bulk flow velocity is compensated for the absence of fuel in the non-reacting conditions. Figure \ref{fig:alpha_stag} represents the IRZ leading edge position $z_{SP}/r_0$ in reacting (black squares) and non-reacting (empty diamonds) conditions. The position of the flame leading edge front $z_f/r_0$ (black disks) is also plotted. The combustion reaction slightly alters the position of the IRZ. Acceleration of the burnt gases due to thermal expansion pushes the IRZ a bit further downstream from the injector outlet, but differences for $z_{SP}/r_0$ between cold flow and hot flow results remain small. This figure also confirms that the flame leading edge $z_f/r_0$ always lies upstream the IRZ leading edge $z_{SP}/r_0$ with and without the combustion reaction. Consequently, measurements of the flow in non-reacting conditions allow to infer the position of the leading point of the IRZ and the flow regime of the swirling jet with good confidence. 
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{SWIRL NUMBER MEASUREMENTS}
+
+Laser Doppler Velocimetry measurements are carried out in non-reacting conditions to determine the three components of the velocity field at the injector outlet. In these experiments, the bulk flow velocity in the injector is compensated for the absence of fuel. Results for the mean (a)-(b) and rms (c)-(d) velocities are presented in Fig.~\ref{fig:LDV} for quarl angles $0^o\leq\alpha\leq 30^o$.  As the pressure field could not be determined, the axial momentum $G_z$ is approached by its pressure-less equivalent $\widetilde{G_z}$, yielding the pressure-less swirl number $\widetilde{S}$ :
+\begin{equation}
+\widetilde{S} = \frac{\int_{A} r \bar{u}_z \bar{u}_\theta \dif A}{r_2 \int_{A} \overline{u}_z^2 \dif A}
+\label{eq:S_1}
+\end{equation}
+where $r_2$ is the diffuser outlet radius  and $A$ denotes the integration area over the entire cross section of the combustion chamber. 
+
+\begin{figure}[t!]
+\centering
+%     \begin{subfigure}[b]{0.19\linewidth}
+
+\includegraphics[width=0.9\linewidth, trim={0 0 0 0mm},clip]{eps/Full_LDV}
+%\includegraphics[width=0.9\linewidth, trim={0 65 0 0mm},clip]{eps/LDV_Utheta_avg}
+%\includegraphics[width=0.9\linewidth, trim={0 65 0 0mm},clip]{eps/LDV_Uz_rms}
+%\includegraphics[width=0.9\linewidth, trim={0 65 0 0mm},clip]{eps/LDV_Utheta_rms}
+\caption{Laser Doppler Velocimetry measurements of the cold swirling flow for $\alpha=0$, 5, 10 and 30$^o$. $S_0=0.85$, Re$=18\,000$.  (a) Mean axial velocity. (b) Mean azimuthal velocity. (c) rms axial velocity fluctuation. (d) rms azimuthal velocity fluctuation.}
+   \label{fig:LDV}
+     % \vspace{-0.2cm}
+\end{figure}
+
+%\begin{figure}[t!]
+%\centering
+%     \includegraphics[width=1\linewidth]{schema_converging_diverging2.eps}
+%    \caption{Two possible changes of section. On the left, $p_{\Sigma} > p_{\infty} \quad  and \quad f_z<0$ : the swirl number increases. On the right, if pressure loss is moderate, $p_{\Sigma} < p_{\infty}\quad and \quad f_z>0 \quad$, the swirl number decreases. }
+%   \label{fig:sketch}
+% % \vspace{-0.5cm}
+%\end{figure}
+
+
+As both $\overline{u}_z$ and $\overline{u}_\theta$ drop to zero out of the swirling jet, it has been verified that the measured value for $\widetilde{S}$ does not depend on the choice of the size of the integration area $A$. When measured at $z/r_0=0.5$, the axial and tangential velocities are always null at the end of the probed volume. These conditions could not be met further downstream $z/r_0>0.5$ or for large quarl angles $\alpha\ge45^{\circ}$ due to the limited optical access through the combustion chamber.
+
+
+One reminds that the geometrical swirl number $S_0=0.85$ is kept constant for all explored cases. The measured values for $\widetilde{S}$ are reported in Tab.~\ref{tab:swirl} for the different quarl angles. It was not possible to perform exploitable measurements of the swirl number in the wall jet regime for $\alpha=45^o$. It is found that the swirl number $\widetilde{S}$ remains roughly unaltered when the diverging cup angle is varied between $0\leq \alpha\leq 30^o$  with the axial-plus-tangential swirler used in this study :
+\begin{equation}
+ \widetilde{S}_{R_2}/\widetilde{S}_{R_1} \simeq 1
+ \label{eq:Sexp}
+\end{equation} 
+where $R_2$ and $R_1$ stand for the outlet radius $r_2$ of two different diffusers. This result is at variance with the simplified model Eq.~(\ref{eq:Gupta}) from Gupta and Lilley \cite{Gupta1984} yielding an increasing  swirl level  as the quarl angle $\alpha$ increases. 
+
+\begin{table}[t!]
+\centering
+%\vspace{-0.75cm}
+\caption{Measured Swirl numbers $\widetilde{S}$  for Re=18\,000 and velocity profiles at  $z/r_0$=0.5 for different quarl angles $\alpha$. }
+\begin{tabular}{|c|c|c|c|c|}
+  \hline
+  $\alpha [^{\circ}]$ & 0 & 5 & 10 & 30\\
+  \hline
+  $\widetilde{S}$ & 0.78&0.72 & 0.78 & 0.74 \\
+    \hline
+%  $\overline{S}_{turb}$ & 0.74&0.78 & 0.73 & 0.70 \\
+%    \hline
+\end{tabular}
+  \label{tab:swirl}
+\end{table}
+
+It also results that the evolution of $\widetilde{S}$ with respect to the widening of the quarl angle cannot be used to interpret the flame topologies seen in Figs.~\ref{fig:chim085} and \ref{fig:LIF-PIV}. Increasing the swirl level, with a swirl number calculated on a pressure-less basis,  shortens the flame and shifts the recirculation zone further upstream \cite{Jourdaine_2016_ASME}. The Oxytec burner exhibits here that enlarging the quarl angle does not alter the  pressure-less swirl number and still lowers the position of the IRZ. At this point, either the common assumptions made to measure the swirl number are  inadequate to configurations featuring a diverging quarl  or the swirl number is not the relevant quantity to investigate the behavior of an injector when the diffuseur cup angle is modified.
+
+
+
+%In order to free ourselves from the lingering doubts  due to unmeasured contribution of pressure and turbulence terms in the swirl number, it has been chosen to deepen the analysis of how theory predicts the swirl evolution in a diverging diffuser.
+
+
+One may first wonder if this difference could be attributed to effects of turbulence that would alter the swirl level between the inlet and outlet of the diffuser cup. As mentioned previously, the rms velocity fluctuations plotted  in Fig.~\ref{fig:LDV}(c)-(d) do not drop to zero away from the burner axis and these data cannot be used to make reliable estimates of the swirl number. However, it appears that the level of turbulence is high for the four flows produced by the different quarls. With the 30$^\circ$ quarl, the rms velocities even surpass the mean values over a large section of the combustion chamber. Finally, the rms values reached by the axial and azimuthal velocities barely change when the quarl angle varies. One can therefore hypothesize that taking into account the contributions from the turbulent velocity fluctuations in the swirl number estimates would lead to reduced variations of the swirl number when the quarl angle is varied.
+%\textcolor{green}{One may first wonder if this difference could be attributed to effects of turbulence that would alter the swirl level between the inlet and outlet of the diffuser cup. One may first note in Fig.~ that the rms values reached by the axial and azimuthal velocities barely change when the quarl angle varies.  These different components were not measured simultaneously, but an attempt was made to estimate changes of swirl number S by taking into account $\overline{u'_z}^2$ in the axial momentum flux $G_z$ and replacing $\overline{u'_zu'\theta}$ by $~\overline{u'_z}\overline{u'\theta}$ in $G_\theta$ to determine changes of the swirl number. It was found that the changes of the flow and flame patterns cannot be explained by the characteristics of the turbulent flow.}
+
+
+As stated in the introduction, the experiments from Chigier and Beer \cite{Chigier:1964fr} and Mahmud {\it et al.} \cite{Mahmud1987} show that the  momentum fluxes $G_\theta$ and $G_z$ remain constant when the static pressure is included in the calculation of $G_z$. A theoretical analysis is developed in the next section to shed further light on this issue.
+
+
+\section*{THEORETICAL ANALYSIS}
+
+The analysis is made by starting from first principles for a constant density flow. As sketched in Fig.~(\ref{fig:sketch}), a fixed control volume is considered with a cross section  inlet  $A_{1}$ and a cross section outlet $A_2$ oriented along the vertical axis $\mathbf{e}_z$. This volume is bounded on its lateral side by an impermeable boundary over a surface area $\Sigma$. Rotational symmetry of the flow and of the control volume boundaries are assumed. For a steady, inviscid, turbulence free and gravity free flow,  the projection of the axial and azimutal momentum balances along the vertical axis yields : 
+%
+\begin{equation}
+\begin{dcases}
+\int_{A_{2}}(\rho  u_{z}^2 + p)\dif A - \int_{A_{1}}(\rho  u_{z}^2 + p)\dif A = - \int_{\Sigma}  p \mathbf{n}  \cdot \mathbf{e}_{z} \dif A  \\
+\int_{A_{2}}\rho r u_{\theta} u_{z} \dif A - \int_{A_{1}}\rho r u_{\theta} \ u_{z} \dif A = 0
+\end{dcases}
+\end{equation}
+%
+where $\mathbf{n}$ is the external normal unit vector to the control volume boundary. 
+
+\begin{figure}[t!]
+\centering
+     \includegraphics[width=0.7\linewidth]{eps/schema_theory.eps}
+    \caption{Notations for the theoretical analysis. Right: the swirl number increases in a converging nozzle because $p_{\Sigma} > p_{\infty}$  ($C_F<0$). Left:  the swirl number decreases in a diffuser because  $p_{\Sigma} < p_{\infty}$ ($C_F>0$) provided the pressure loss is not  too large.}
+   \label{fig:sketch}
+\end{figure}
+
+The quantity  $p_{\infty}  \int_{A} \mathbf{n} \cdot \mathbf{e}_z \dif A = 0$ is subtracted from the momentum balance, where $p_ {\infty}$ corresponds to the ambiant pressure, which is taken constant. One is left with :
+%
+\begin{equation}
+\label{eqswirl_system}
+\begin{cases}
+{G_z}_2 - {G_z}_1 = F_{z}   \\
+{G_\theta}_2 - {G_\theta}_1 = 0
+\end{cases}
+\end{equation}
+%
+where ${G_z}_j$ and ${G_\theta}_j$ are respectively the axial and tangential momentum flux projections through the cross sections $A_j$ with $j=1,2$:
+\begin{equation}
+{G_z}_j = \int_{A_j} \left( \rho \ u_{z}^2 + (p-p_{\infty})\right) \dif A \quad,\quad  {G_\theta}_j = \int_{A_j}\rho r u_{\theta} u_{z} \dif A
+\end{equation}
+and $F_z$ denotes the axial force exerted by the solid boundaries on the flow. Due to the  rotational symmetry, this force is oriented along the vertical axis:
+\begin{equation}
+F_{z} = - \int_{\Sigma} (p-p_{\infty}) \mathbf{n} \cdot \mathbf{e}_{z} \dif A
+\label{force}
+\end{equation}
+The choice of $p_\infty$, albeit indisputable in an unconfined jet in still air, can be debated when the jet flows into a combustion chamber, where the mean pressure differs from the atmospheric pressure. In this theoretical study, confinement is not taken into account, so that $p_\infty = p_2$, the pressure at the diffuser outlet.
+
+
+One designates by $C_F = F_z/{G_z}_1$ the pressure force made dimensionless by the axial momentum flux in section 1. The swirl number is also defined as $S = G_\theta /(R G_z)$, where $R$ is the radius of the cross section area of interest. The evolution of the swirl number $S$ between an inlet with section $A_1$ and and outlet with section $A_2$ can thus be expressed as:
+\begin{equation}
+\label{eq:swirl_formula}
+ \frac{S_{2}}{S_{1}} = \frac{R_{1}}{R_{2}} \frac{1}{1+ C_{F}}  \\
+\end{equation}
+
+Assuming that the two axial momentum fluxes are positive quantities, ${G_z}_1 \geq 0$ and ${G_z}_2 \geq 0$, Eq.~(\ref{eqswirl_system}) yields the folllowing inequality for $C_F$: $-1\leq C_F\leq {G_z}_2/{G_z}_1$. The evolution of the swirl number through a tube with a variable cross section area is controlled by the pressure force applied to the impermeable boundary in the axial  direction through the ratio $C_F=F_z/{G_z}_1$ in Eq.~(\ref{eq:swirl_formula}). Since the azimuthal momentum $G_{\theta}$ remains unaltered for an inviscid flow along a duct, the swirl variation is driven by the rate of conversion of the initial axial momentum flux ${G_z}_1$ to the axial force $F_{z}$ exerted on the impermeable boundary. 
+
+Let consider the generic cases of a nozzle and a diffuser as sketched in Fig.~\ref{fig:sketch}. Equation~(\ref{eq:swirl_formula}) shows that the swirl number necessarily increases in the converging nozzle because $p_{\Sigma} > p_{\infty}$ and the ratio $C_{F}$ is negative. It results in an increase of the swirl number due both to $R_1/R_2>1$ and $(1+C_F)^{-1}>1$.
+
+The case of the diverging cup shown on the right in Fig.~\ref{fig:sketch} is more difficult to handle and does not lead to a systematic conclusion.  The pressure distribution along the lateral wall now depends on the eventual presence of recirculation zones due to flow separation inside the diffuser. This pressure distribution is in this case much more sensitive to the exact geometry of the diffuser \cite{schlichting1955boundary}. The pressure drop through the device results from a competition between the conversion of kinetic energy and pressures losses modeled here by a singular pressure loss coefficient $k$.  In typical air swirling injectors, the head loss remains generally weak, and one seeks to keep $C_F$ as low as possible to limit pressure losses.  This leads  in Fig.~\ref{fig:sketch} to a decrease in the swirl number between the inlet and the outlet sections of a diverging cup. The sign of $C_F$ in Fig.~\ref{fig:sketch} is confirmed by the pressure measurements from Chigier and Beer \cite{Chigier:1964fr}.
+
+In both the converging nozzle and diverging cup, the term $(1+C_F)^{-1}$ in Eq.(\ref{eq:swirl_formula}) magnifies the respective increase and drop of swirl due to the change of the cross section area between the inlet and outlet. The contrast with  Eq.~(\ref{eq:Gupta}) denotes that the swirl number evolution differs when taking into account the pressure terms. Note that the conservation of axial momentum flux reported in \cite{Chigier:1964fr,Mahmud1987}  is interpreted here as $C_F$ being small in Eq.~(\ref{eq:swirl_formula}).
+
+
+
+
+
+\subsection*{Mechanical energy balance}
+
+The previous qualitative analysis is deepened on a more quantitative basis with the help of shape factors that are defined as follows. Profiles are first set dimensionless with shape factors that characterize the inhomogeneous nature of the considered velocity profiles. Let ${f_z}_j$ and ${f_\theta}_j$ respectively designate the dimensionless profiles of the axial and tangential velocities, with $j=1,2$ :
+
+\begin{equation}
+{u_z}_j(r) = {f_z}_j(r){U_z}_j \quad {u_\theta}_j(r) = {f_\theta}_j(r){U_\theta}_j 
+\label{shape}
+\end{equation}
+
+%
+where ${U_z}_j$ and ${U_\theta}_j$ are the area-averaged axial and tangential velocities shown in Fig.~\ref{fig:sketch}. They are defined as ${U_i}_j A_j = \int_{A_{j}} {u_i}_j(r) \dif A$. The shape factor  ${f_i}_j(r)$ needs in turn to comply with  $\int_{A_{j}} {f_i}_j(r) \dif A = A_j$, with $i=z,\theta$ and $j=1,2$. 
+
+One can express the pressure-less swirl variation through a change of the cross section area by:
+\begin{equation}
+\frac{\widetilde{S}_2}{\widetilde{S}_1} = \frac{R_2}{R_1}\frac{\int_{A_{1}} {f_z}_1^2(r) \dif A /A_1}{\int_{A_{2}} {f_z}_2^2(r) \dif A/A_2}
+\label{eq:gupta_factorshape}
+\end{equation}
+
+Due to the angular momentum conservation, change of the swirl number is fully controlled by the axial flow velocity profile at the system terminations. This expression generalizes Eq.~(\ref{eq:Gupta}) from Gupta and Lilley \cite{Gupta1984} established for a constant axial velocity (${f_z}_1={f_z}_2=1$) to velocity profiles of arbitrary shapes obeying to Eq.~(\ref{shape}).
+
+Equation~(\ref{eq:gupta_factorshape}) is now used to highlight the impact of the structure of the velocity profiles on the evolution of the swirl number. The LDV measurements reported in Fig.~(\ref{fig:LDV}) are used to determine the shape factors ${f_z}_1$ and ${f_z}_2$ at the diffuser outlet, for two different diffusers of respective radius $R_1$ and $R_2$. In doing so, one retrieves the experimental result $\widetilde{S}_2/\widetilde{S}_1\simeq 1$, as in Eq.~(\ref{eq:Sexp}). Therefore, the use of shape factors in Eq.~(\ref{eq:gupta_factorshape}) reconciliates the evolution of the swirl number Eq.~(\ref{eq:Sexp}) measured by LDV with the model Eq.~(\ref{eq:Gupta}) from Gupta and Lilley. This validation underlines that the value of the swirl number mainly relies on the assumptions made on the velocity profiles.
+
+Shape factors are now used to close the dimensionless pressure force $C_F$ term in Eq.~(\ref{eq:swirl_formula}) by a balance of mechanical energy applied to the control volume delimited by the inlet $A_1$ and outlet $A_2$ sections of the diverging quarl. The flow is again considered as steady, with negligible viscous effects. %The strong assumption made in swirl analyses has always been that the pressure and velocity profiles are known. 
+The mechanical energy balance is expressed in its integral form:
+%
+\begin{eqnarray}
+\int_{A_{1}}\left(\frac{1}{2}\rho \mathbf{v}^2 + p \right)  \mathbf{v} \cdot \mathbf{n}\dif A - \int_{A_{2}}\left(\frac{1}{2}\rho \mathbf{v}^2 + p \right)  \mathbf{v} \cdot \mathbf{n}\dif A   \nonumber \\ 
+= k \int_{A_{1}}\frac{1}{2} \rho u_z^2\mathbf{v} \cdot \mathbf{n}\dif A 
+\end{eqnarray}
+%
+where $k$ denotes the head loss through the diverging quarl. Mass, momentum and energy balances are rewritten with the help of shape factors. Quantities are set dimensionless with respect to ${U_z}_1$. For a fixed ratio ${U_\theta}_1/{U_z}_1$ characterizing the angular velocity of the upstream flow, the set of three balance equations  is solved to determine the ratios  ${U_z}_2/{U_z}_1$, ${U_\theta}_2/{U_z}_2$ and $(p_1 - p_\infty)/(\rho {U_z}_1^2)$. When assuming the shape factor distribution, the swirl number $S_2/S_1$ comes as a result.
+
+
+An analytical solution is derived for a uniform axial flow ${f_z}_j = 1$ and a solid-body rotation ${f_\theta}_j = (3/2)(r/R)$  at the inlet ($j=1$) and outlet ($j=2$) of the diffuser, as Gupta and Lilley \cite{Gupta1984} did in their model Eq.~(\ref{eq:Gupta}). The resolution of the system leads to the pressure coefficient $C_p=(p_2-p_1)/(\rho {U_z}_1^2/2)$ and the pressure-dependent swirl number $S$ :
+\begin{equation}
+C_p=\frac{p_2-p_1}{\rho {U_z}_1^2/2} = (1-x^{-2}) \left( x^{-2}+1+2 \widetilde{S_1}^2 \right)-k
+\label{eq:pressure_shape_factor}
+\end{equation}
+and
+\begin{equation}
+\frac{S_2}{S_1} = x \left[ 1+\frac{k}{2} + \frac{1}{2}(x^{-2}-1) \left( x^{-2}+1+2 {\widetilde{S_1}^2} \right) \right]
+\label{eq:swirl_shape_factor}
+\end{equation}
+
+\noindent where $x=R_2/R_1$ and  $\widetilde{S}_1 = \frac{\Omega_1 R_1}{2 {U_z}_1}$ designates the pressure-less swirl number, and $\Omega_1$ the angular velocity at the diffuser inlet. It appears that the ratio of the swirl number does not only depend on the ratio $R_2/R_1$ but also on the pressure-less swirl number $\widetilde{S}_1$ and head loss $k$. As the swirl evolution is not straightforward in Eq.~(\ref{eq:swirl_shape_factor}), a Taylor expansion in the neighborhood of $R_1=R_2$ yields : 
+%
+\begin{equation}
+\frac{S_2}{S_1} = 1 + \frac{k}{2} - \left(\frac{R_2}{R_1}-1\right)\left(1+2\widetilde{{S}_1}^2 - \frac{k}{2}\right)
+\label{eq:taylor}
+\end{equation}
+This latter expression describes the decline of the swirl number through a small diverging cup.
+
+\begin{figure}[t!]
+\centering
+     \includegraphics[width=0.8\linewidth, trim={0 0 0 0mm}, clip ]{eps/Swirl_ratio-S1}
+%     \includegraphics[width=0.48\linewidth]{Swirl_ratio-k.eps}
+    \caption{Swirl number ratio $S_2/S_1$ for different inlet pressure-less swirl number $S_1$, with $k=0$.}
+   \label{fig:swirl_ratio_main}
+ % \vspace{-0.5cm}
+\end{figure}
+
+Figure \ref{fig:swirl_ratio_main} depicts the swirl number evolution through a diffuser for different inlet swirl numbers $S_1$ in the absence of head loss $k=0$. The scope of these formula remains limited as the head loss $k$ needs to be specified and depends itself on several flow parameters. It is however shown here that the pressure contribution to the swirl number can be evaluated with a balance of mechanical energy. This energy budget shows that an increasing swirl level $\widetilde{S}_1$ at the diffuser inlet leads to a higher kinetic energy loss through a section change, so that ${G_z}_1$ decreases with $p_1 - p_2$, yielding a smaller  ratio $S_2/S_1$.
+
+As a conclusion, the impact of the quarl angle on the swirl number $S$ evolution has been investigated from different perspectives: (i) through LDV measurements of the pressure-less swirl number $\widetilde{S}$, (ii) with a theoretical analysis of the swirl number $S$ evolution with the help of Eq.~(\ref{eq:swirl_formula}), (iii) with the help of shape factors to solve the mechanical energy balance in Eq.~(\ref{eq:swirl_shape_factor}). It has been shown that in all three cases, the swirl number decreases with the quarl angle expansion, and that the pressure-less swirl number $\widetilde{S}$ is not altered through the cross section area change. This theoretical analysis confirms that changes of the swirl level $S$ through the injector diffuser cup, regardless the method used to evaluate this change, cannot explain the structure of the flame and flow patterns observed in the experiments when the injector cup angle is varied.
+
+
+It is at this point worth recalling the assumptions made in the experimental and theoretical analysis carried out in this work. First, the expressions Eqs.~(\ref{eq:swirl_formula}) and (\ref{eq:swirl_shape_factor}) derived in this work result from inviscid theory, in which effects of turbulence have also been neglected. Measurements of the swirl number carried out in this work do not include effects of the turbulent velocity fluctuations either. Secondly, as the overall study focuses on the influence of the quarl angle, all other geometrical parameters that are known to alter the flame and flow patterns have been kept constant. For instance, effects of the injector geometry have been investigated in \cite{Jourdaine_2017_ASME}. Effects of the combustion chamber confinement have been investigated in \cite{fanaca2010comparison} and this study pertains to situations in which the confinement ratio is large.
+
+
+
+\subsection*{Impact of quarl on the stagnation point position of the IRZ}
+%As the tangential component through the swirl number does not provide an explanation for the growing recirculation zone of the opening quarl, 
+
+Measurements in Fig.~\ref{fig:LIF-PIV} show that the growth of the IRZ is promoted by a large increase in the radial component of the flow when the quarl angle rises from $0^\circ$ up to $45^\circ$. Through the continuity equation, the gradient of radial velocity is balanced with the negative gradient of axial velocity in the vicinity of the diverging nozzle outlet. The following analysis is carried out so as to provide a model for the displacement of the position of the internal recirculation zone towards the injector outlet when the quarl angle increases. 
+
+Let assume that a swirling jet passes through a diverging quarl, with a sufficiently high level of swirl to create an inner recirculation zone in the combustion chamber, as sketched in Fig.~\ref{fig:stagnation}. The pressures, velocities and cross section areas are indexed by $1$ at the diffuser inlet, and by $2$  at the outlet of the diverging cup. The quarl outlet also defines the axial origin, whereas $z_{SP}$ stands for the axial coordinate of the stagnation point defining the lower position of the IRZ along the burner axis.
+%The velocity measurements in  , which is characteristic of the expansion of the recirculation zone. Through continuity equation, it is shown that the strong negative axial gradient account
+
+\begin{figure}[t!]
+\centering
+     \includegraphics[width=0.5\linewidth]{eps/stagnation}
+%     \includegraphics[width=0.48\linewidth]{Swirl_ratio-k.eps}
+    \caption{Schematic of the flow depicted as a stagnation flow between the injector quarl and the internal recirculation zone.}
+   \label{fig:stagnation}
+ % \vspace{-0.5cm}
+\end{figure}
+
+The axial velocity gradient along the burner axis is set by the adverse pressure gradient, no matter the swirl motion :
+\begin{equation}
+\frac{\partial p}{\partial z}=-\rho u_{z} \frac{\partial u_z}{\partial z} 
+\label{eq:local_axial_momentum}
+\end{equation}
+%\Bigr|{\substack{z=0}}
+The adverse pressure gradient  is promoted by the expansion of the quarl and stays positive up to the stagnation point $z_{SP}$. The momentum balance Eq.~(\ref{eq:local_axial_momentum}) is now evaluated at the quarl outlet $z=0$. Figure \ref{fig:beta} indicates that the swirling jet opening angle $\beta$ regularly increases like the angle $\alpha$ of the diffuser cup as long as it lies in the free jet regime : $\beta \simeq \alpha$ when $\alpha < 30^\circ$. Therefore, following the streamlines, the pressure gradient at the quarl outlet in section (2) is then equal to the pressure gradient at the quarl inlet in section (1) :
+% (the pressure drop due to such abrupt expansion of section is known to be small):
+\begin{equation}
+\frac{p_2 - p_1}{h} \sim - \rho  {u_z}_2\frac{\partial u_z}{\partial z}\Bigr|_{z=0}
+\label{eq:stag_balance}
+\end{equation}
+The impact of the internal recirculation zone on the flow in the vicinity of the injector outlet can be considered as a typical stagnation flow with a strain rate $\epsilon$. The inviscid flow thus obeys to $u_{z} = {u_z}_2 - \epsilon z $, and $z_{SP} = {u_z}_2/\epsilon$.  By eliminating $\epsilon$, the height of the stagnation point thus scales as:
+\begin{equation}
+\frac{z_{SP}}{h} \sim \left(\frac{A_1}{A_2}\right)^2 \frac{1}{C_p} \quad\mbox{with}\quad C_p = \frac{p_2-p_1}{\rho {{U_z}_1}^2}
+\label{eq:stagnation}
+\end{equation}
+
+The pressure coefficient $C_p$ is given by Eq.~(\ref{eq:pressure_shape_factor}) showing that a diverging quarl increases the pressure drop $C_p$ positively. Equation (\ref{eq:stagnation}) states that the adverse pressure gradient moves the stagnation point $z_{SP}$ further upstream closer to the injector outlet due to the cross section area ratio $(A_1/A_2)^2$ and the inverse of the pressure coefficient $1/C_p$ that both decrease for increasing quarl angles. 
+
+This behavior is precisely the one which is observed in Figs.~\ref{fig:LIF-PIV} and \ref{fig:beta}. Predictions from Eq.~(\ref{eq:stagnation}) are superimposed to the measurements of the IZR leading edge position along the burner axis in Fig.~\ref{fig:beta}. To do so, the values found for $\widetilde{S} = 0.85$ and $k=0.5$ are used to determine $C_p$ with Eq.~(\ref{eq:pressure_shape_factor}) and the model is calibrated with the measurements made for $\alpha=10^\circ$. No difference has been found when changing the head loss coefficient from $k=0$ up to $k=1$ because the major contribution in Eq.~(\ref{eq:stagnation}) lies in the area ratio $A_1/A_2$. The match between the model and the measurements is excellent in Fig.~\ref{fig:beta}, except in the absence of quarl when $\alpha = 0^\circ$. In this case, the adverse pressure gradient in Eq.~(\ref{eq:local_axial_momentum}) is not related to the quarl, but to the natural expansion of the swirling jet, a feature which is not taken into account in the present analysis.
+
+It has been shown that the position of the leading edge front of a swirling flame can be controlled in the Oxytec test-rig by adjusting the angle of the diffuser cup from the injector. It has then been demonstrated that the resulting modification of the swirl level due to the quarl does not take part in the process because the diverging cup reduces the swirl number $S$ as seen in Eq.~(\ref{eq:Sexp}) and let the pressure-less swirl number $\widetilde{S}$ unaltered (Eq.~(\ref{eq:swirl_formula})) in the Oxytec test-rig.  It has then been shown that the axial velocity gradient at the injector outlet mainly depends on both the magnitude of the axial velocity and the pressure drop induced by the quarl. The quarl expansion is responsible for both a stronger adverse pressure gradient and a reduction of the axial flow velocity.
+ 
+Though assuming a stagnation flow pattern at the burner outlet constitutes a rough approximation of reality, the model Eq.~(\ref{eq:stag_balance}) developed in this study successfully reproduces the evolution of the stagnation point position $z_{SP}$ of the internal recirculation region as a function of the axial velocity gradient at the burner outlet $\partial u_z/\partial z(z=0)$ as observed in the experiments. This physics based model may be used as a starting point to develop more realistic representations of the swirled flow at the outlet of a swirling injector and needs to be further corroborated with other injector technologies.
+
+
+%\begin{figure}[t!]
+%\centering
+%     \includegraphics[width=1\linewidth]{Swirl_ratio-k.eps}
+%    \caption{$S_2/S_1$ ratio according to R2/R1 for different $k$ pressure loss}
+%   \label{fig:swirl_ratio_different_k}
+% % \vspace{-0.5cm}
+%\end{figure}
+%\subsubsection*{Effect of profile}
+%The figure \ref{fig:sensitivity_profile} investigates the case where another profile is selected.
+%\begin{figure}[t!]
+%\centering
+%     \includegraphics[width=1\linewidth]{Profile.eps}
+%    \caption{Different profiles have been tested}
+%   \label{fig:profile}
+% % \vspace{-0.5cm}
+%\end{figure}
+
+
+
+%\begin{figure}[t!]
+%\centering
+%     \includegraphics[width=1\linewidth]{Sensitivity_Omega1-200_Utheta2-Beta_Utheta1-Beta.eps}
+%    \caption{$S_2/S_1$ ratio according to R2/R1 for different profiles for $u_{\theta}= \Omega r (1 - exp(-\beta(1-r/R)^2)$ with $\Omega_1 = 200 rad/s$}
+%    
+%   \label{fig:sensitivity_profile}
+% % \vspace{-0.5cm}
+%\end{figure}
+
+\begin{equation}
+\frac{z_{SP}}{h} \sim \left(\frac{{A_2}_{0}}{A_2}\right)^2 \frac{1}{J} \frac{1}{C_p} \quad\mbox{with}\quad C_p = \frac{p_2-p_1}{\rho {{U_z}_1}^2}
+\label{eq:stagnation}
+\end{equation}
+
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{CONCLUSION}
+
+The impact of a diverging cup on the structure of technically premixed swirling flames has been investigated experimentally and analytically. In this study, flames are stabilized aerodynamically at the injector outlet of the flow produced by an axial-plus-tangential swirler ended by a diffuser cup with an adjustable angle. 
+
+Flame topologies have been observed with OH* chemiluminescence imaging. PIV and OH PLIF measurements in reacting conditions  have provided information on the structure of the flame and the internal recirculation zone produced by the swirled flow.  For a given geometrical swirl number calculated before the diffuser cup, increasing the quarl angle considerably widens the internal recirculation zone, shortens the flame and moves the position of the IRZ upstream closer to the burner outlet. A large value of the quarl angle can place the flow and flame patterns in the wall-jet regime, at a confinement ratio where a free-jet regime is generally produced in the absence of quarl.
+
+
+A comparison with non reacting flow conditions has shown a very similar evolution of the position of the internal recirculation region as the quarl angle widens with results obtained under reacting conditions. LDV has been carried out to determine the swirl number without pressure terms for the different quarl angles tested. It has been found that the pressure-less swirl number $S$ remains unaltered by the quarl expansion, a result which conflicts with the predictions from Gupta and Lilley {\it et al.} \cite{Gupta1984}. The measured swirl levels $\widetilde{S}$ are therefore seen not to account for the drastic increase of the internal recirculation as the quarl angle increases.
+
+A theoretical analysis has been carried out to take the pressure contribution into account in the Swirl number $S$ and examine the impact of a diverging cup on the swirl number evolution. It has been found that the swirl number $S$ decreases as the quarl angle increases, and that this trend is magnified when pressure effects are included. The pressure contribution reduces the upstream axial momentum flux. Hence, neither the measured pressure-less swirl number nor the theoretical estimates allow to account for the flame and flow patterns observed in the experiments.  It is firmly concluded that   the swirl number is not the relevant dimensionless quantity  to assess the impact of a nozzle cup on the flame and flow patterns when the quarl angle is varied, all other parameters remaining fixed.
+
+It is finally found that the decrease of the axial flow velocity and increase of the adverse pressure gradient at the burner outlet are both responsible for the displacement of the position of the stagnation point of the internal recirculation zone as the quarl angle increases. The diffuser expansion is seen to diminish the axial momentum flux per unit area, which reduces the jet ability to push the internal recirculation zone further downstream. A theoretical model has been developed that well reproduces the experimental data for the diffuser cup angles tested between $5^\circ \leq \alpha \leq 30^\circ$ by assuming that the swirling flow takes the structure of a stagnation flow  at the burner outlet.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{ACKNOWLEDGMENTS}
+This work is supported by the Air Liquide, CentraleSup\'elec and CNRS Chair on oxy-combustion and heat transfer for energy and environment and by the OXYTEC project (ANR-12-CHIN- 0001) from l'Agence Nationale de la Recherche. We also would like to thank the technical staff of EM2C for their assistance during the design and construction of the experimental setup.
+%%\section*{FOOTNOTES\protect\footnotemark}
+%%\footnotetext{Examine the input file, asme2e.tex, to see how a footnote is given in a head.}
+%%
+%%Footnotes are referenced with superscript numerals and are numbered consecutively from 1 to the end of the paper\footnote{Avoid footnotes if at all possible.}. Footnotes should appear at the bottom of the column in which they are referenced.
+%%
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%The ASME reference format is defined in the authors kit provided by the ASME.  The format is:
+%%
+%%\begin{quotation}
+%%{\em Text Citation}. Within the text, references should be cited in  numerical order according to their order of appearance.  The numbered reference citation should be enclosed in brackets.
+%%\end{quotation}
+%%
+%%The references must appear in the paper in the order that they were cited.  In addition, multiple citations (3 or more in the same brackets) must appear as a `` [1-3]''.  A complete definition of the ASME reference format can be found in the  ASME manual \cite{asmemanual}.
+%%
+%%The bibliography style required by the ASME is unsorted with entries appearing in the order in which the citations appear. If that were the only specification, the standard {\sc Bib}\TeX\ unsrt bibliography style could be used. Unfortunately, the bibliography style required by the ASME has additional requirements (last name followed by first name, periodical volume in boldface, periodical number inside parentheses, etc.) that are not part of the unsrt style. Therefore, to get ASME bibliography formatting, you must use the \verb+asmems4.bst+ bibliography style file with {\sc Bib}\TeX. This file is not part of the standard BibTeX distribution so you'll need to place the file someplace where LaTeX can find it (one possibility is in the same location as the file being typeset).
+%%
+%%With \LaTeX/{\sc Bib}\TeX, \LaTeX\ uses the citation format set by the class file and writes the citation information into the .aux file associated with the \LaTeX\ source. {\sc Bib}\TeX\ reads the .aux file and matches the citations to the entries in the bibliographic data base file specified in the \LaTeX\ source file by the \verb+\bibliography+ command. {\sc Bib}\TeX\ then writes the bibliography in accordance with the rules in the bibliography .bst style file to a .bbl file which \LaTeX\ merges with the source text.  A good description of the use of {\sc Bib}\TeX\ can be found in \cite{latex, goosens} (see how 2 references are handled?).  The following is an example of how three or more references \cite{latex, asmemanual,  goosens} show up using the \verb+asmems4.bst+ bibliography style file in conjunction with the \verb+asme2e.cls+ class file. Here are some more \cite{art, blt, ibk, icn, ips, mts, mis, pro, pts, trt, upd} which can be used to describe almost any sort of reference.
+%%
+%%% Here's where you specify the bibliography style file.
+%%% The full file name for the bibliography style file 
+%%% used for an ASME paper is asmems4.bst.
+\end{comment}
